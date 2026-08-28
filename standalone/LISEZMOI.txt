@@ -1,0 +1,111 @@
+================================================================
+  VOOMNET TECHNOLOGY — GESTION DES ACHATS
+  Application web de démonstration (100 % front-end)
+================================================================
+
+CONTENU DU PAQUET
+-----------------
+  index.html                          → L'application complète (un seul fichier)
+  modele_fournisseurs_voomnet.csv     → Modèle CSV d'importation de fournisseurs
+  modele_fournisseurs_voomnet.json    → Modèle JSON d'importation de fournisseurs
+  LISEZMOI.txt                        → Ce guide
+
+COMMENT LANCER L'APPLICATION
+----------------------------
+  1. Double-cliquez sur « index.html » (Google Chrome recommandé).
+  2. Connectez-vous avec l'un des comptes de démonstration ci-dessous.
+  3. C'est tout ! Aucune installation, aucun serveur, aucune base de
+     données externe n'est nécessaire.
+
+  Remarque : une connexion Internet permet de charger la bibliothèque
+  Excel (SheetJS via CDN) pour lire/écrire les fichiers .xlsx.
+  Sans Internet, l'application reste 100 % fonctionnelle avec les
+  fichiers CSV et JSON.
+
+COMPTES DE DÉMONSTRATION
+------------------------
+  ┌────────────────┬──────────────┬───────────┐
+  │ Rôle           │ Identifiant  │ Mot de passe │
+  ├────────────────┼──────────────┼───────────┤
+  │ Administrateur │ admin        │ admin123  │
+  │ Demandeur      │ demandeur    │ demo123   │
+  │ Responsable    │ responsable  │ demo123   │
+  └────────────────┴──────────────┴───────────┘
+
+PROCESSUS DE L'APPLICATION (assistant en 6 étapes)
+---------------------------------------------------
+  1. INFOS + ARTICLES — Le DEMANDEUR crée une demande : articles,
+     quantités, coût présumé (somme globale calculée automatiquement,
+     motif facultatif).
+  2. FOURNISSEURS — Il sélectionne plusieurs fournisseurs (min. 3),
+     avec leurs coordonnées : EMPLACEMENT, WHATSAPP (lien direct
+     wa.me cliquable), SITE INTERNET, RÉFÉRENCES.
+  3. PRIX NÉGOCIÉS — Après avoir APPELÉ chaque fournisseur, il
+     reporte les NOUVEAUX PRIX NÉGOCIÉS article par article et par
+     fournisseur (délai, garantie, conditions de paiement inclus).
+     Les prix restent modifiables en revenant sur cette étape.
+  4. COMPARAISON — Tableau croisé automatique : prix négocié de
+     chaque article chez chaque fournisseur, totaux, délais,
+     garanties. Meilleurs prix surlignés en vert : 💰 meilleur
+     prix par article et meilleur total, 🚚 livraison la plus
+     rapide, 🛡️ meilleure garantie.
+  5. CHOIX — Sélection du fournisseur retenu (une seule sélection)
+     + justification obligatoire ; écart vs coût présumé affiché.
+  6. RÉCAPITULATIF — Récap complet (coût présumé vs prix négociés
+     par article) puis SOUMISSION au responsable.
+
+  Le RESPONSABLE approuve / refuse / demande une modification.
+  Après approbation : création du bon de commande (BC-AAAA-NNNNN)
+  avec les lignes AUX PRIX NÉGOCIÉS, impression possible, puis
+  réception (complète ou partielle).
+  La demande passe alors en ✓ CLÔTURÉE (timeline complète visible).
+
+RÔLES ET DROITS
+---------------
+  • ADMINISTRATEUR : tous les droits — gestion des fournisseurs
+    (ajout, modification, désactivation, suppression), import/export
+    Excel·CSV·JSON, gestion des utilisateurs, toutes les demandes,
+    commandes, réceptions, rapports, paramètres (réinitialisation démo).
+  • DEMANDEUR : crée et suit ses demandes, consulte le catalogue
+    fournisseurs, compare les offres, crée ses commandes et
+    réceptions.
+  • RESPONSABLE : valide les demandes qui lui sont soumises et
+    consulte l'historique de ses validations.
+
+CHAMPS FOURNISSEUR
+------------------
+  FOURNISSEUR NOM | RÉFÉRENCES | EMPLACEMENT | WHATSAPP | SITE INTERNET
+  (+ STATUT : Actif / Inactif)
+
+IMPORT / EXPORT DES FOURNISSEURS (menu 🏢 Fournisseurs, admin)
+--------------------------------------------------------------
+  • IMPORT : bouton « 📥📤 Importer / Exporter » → choisissez un
+    fichier .xlsx, .xls, .csv ou .json → aperçu et contrôle
+    (« X fournisseurs détectés », lignes invalides signalées sans
+    bloquer les valides) → « ✓ Importer les fournisseurs ».
+  • EXPORT : même fenêtre → « 📊 Excel (.xlsx) », « 🧾 JSON » ou
+    « 📄 CSV ». Les colonnes exportées sont exactement celles de
+    la structure ci-dessus.
+  • MODÈLES : téléchargeables directement depuis l'application
+    (Excel, CSV, JSON) — ou utilisez ceux fournis dans ce paquet.
+
+STOCKAGE DES DONNÉES
+--------------------
+  Toutes les données sont conservées dans le « localStorage » du
+  navigateur (clé : voomnet_achats_v4). Elles persistent entre les
+  sessions sur le même poste/navigateur.
+  ⚠️ Elles ne sont pas partagées entre plusieurs postes : c'est une
+  démonstration de validation du concept.
+  → Réinitialisation : admin → ⚙️ Paramètres → « Réinitialiser les
+    données de démonstration » (recrée 5 utilisateurs, 10
+    fournisseurs, 5 demandes, 2 commandes, 2 réceptions).
+
+ÉVOLUTION VERS UN VRAI BACKEND
+------------------------------
+  Toutes les lectures/écritures passent par une couche unique
+  (loadDB / saveDB). Pour brancher une API REST, il suffit de
+  remplacer cette couche par des appels fetch() — le reste de
+  l'application ne change pas.
+
+BONNE DÉMONSTRATION ! 🚀
+================================================================

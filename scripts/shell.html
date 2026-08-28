@@ -1,0 +1,63 @@
+<!-- ============================= ÉCRAN DE CONNEXION ============================= -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">V</div>
+    <div class="login-title">VOOMNET</div>
+    <div class="login-sub">GESTION DES ACHATS</div>
+    <form id="login-form" autocomplete="off">
+      <div class="field" style="margin-bottom:13px">
+        <label for="login-id">Identifiant</label>
+        <input id="login-id" type="text" placeholder="ex : demandeur" required>
+      </div>
+      <div class="field">
+        <label for="login-pw">Mot de passe</label>
+        <input id="login-pw" type="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn primary" style="width:100%;justify-content:center;margin-top:16px">🔐 Se connecter</button>
+    </form>
+    <div class="demo-box">
+      <p>Comptes de démonstration</p>
+      <button class="demo-chip" data-act="fill-login" data-u="admin" data-p="admin123"><span>🔑 Administrateur</span><code>admin / admin123</code></button>
+      <button class="demo-chip" data-act="fill-login" data-u="demandeur" data-p="demo123"><span>📝 Demandeur</span><code>demandeur / demo123</code></button>
+      <button class="demo-chip" data-act="fill-login" data-u="responsable" data-p="demo123"><span>✅ Responsable</span><code>responsable / demo123</code></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= APPLICATION ============================= -->
+<div id="app" class="hidden">
+  <aside id="sidebar">
+    <div class="sidebar-logo">
+      <div class="mini">V</div>
+      <div><b>VOOMNET</b><span>GESTION DES ACHATS</span></div>
+    </div>
+    <nav id="sidebar-nav"></nav>
+    <div class="sidebar-user">
+      <div class="avatar" id="su-avatar"></div>
+      <div style="min-width:0">
+        <div class="nm" id="su-name"></div>
+        <div class="rl" id="su-role"></div>
+      </div>
+      <button data-act="logout" title="Se déconnecter">⏻</button>
+    </div>
+  </aside>
+  <div class="main">
+    <header id="topbar">
+      <button id="hamburger" data-act="toggle-sidebar">☰</button>
+      <h1 id="page-title">Tableau de bord</h1>
+      <div class="bell-wrap">
+        <button class="icon-btn" data-act="notif-toggle" title="Notifications">🔔<span class="bell-badge" id="bell-badge" style="display:none">0</span></button>
+        <div class="notif-panel hidden" id="notif-panel"></div>
+      </div>
+      <div class="user-chip">
+        <div class="avatar" style="width:30px;height:30px;font-size:11px" id="tu-avatar"></div>
+        <div><div class="nm" id="tu-name"></div><div class="rl" id="tu-role"></div></div>
+      </div>
+    </header>
+    <main id="page-content"></main>
+  </div>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+<div id="print-root"></div>
