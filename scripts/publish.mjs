@@ -101,11 +101,12 @@ console.log(`   ✔ poussé vers origin/${branch}`);
 /* ---------- 5. déploiement Vercel ---------- */
 step(5, "Déploiement Vercel");
 console.log("   site :", SITE);
-const deadline = Date.now() + 5 * 60 * 1000;
+const deadline = Date.now() + 6 * 60 * 1000;
 let deploye = false;
 while (Date.now() < deadline) {
   await new Promise((r) => setTimeout(r, 20000));
   const now = buildHash();
+  if (now && now === sha) { deploye = true; console.log(`   ✔ commit ${sha} en ligne`); break; }
   if (now && now !== before) { deploye = true; console.log("   ✔ nouveau build en ligne :", now); break; }
   process.stdout.write(".");
 }
@@ -123,10 +124,11 @@ console.log(`  Vercel  : ${SITE}`);
 function buildHash() {
   try {
     const html = execSync(`curl -s --max-time 30 ${SITE}`, { encoding: "utf8" });
-    /* l'identifiant de build Next.js change à CHAQUE déploiement,
-       même si le contenu du bundle client reste identique */
-    const m = html.match(/\/_next\/static\/([A-Za-z0-9_-]{8,})\//);
+    /* la page expose le numéro de commit déployé : <meta name="voomnet-build" content="89b8b7e"> */
+    const m = html.match(/<meta name="voomnet-build" content="([^"]*)"/);
     if (m) return m[1];
+    const b = html.match(/\/_next\/static\/([A-Za-z0-9_-]{8,})\//);
+    if (b) return b[1];
     const c = html.match(/\/_next\/static\/chunks\/app\/page-([a-z0-9]+)\.js/);
     return c ? c[1] : "";
   } catch { return ""; }
