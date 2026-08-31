@@ -268,10 +268,16 @@ table.cmp{border-collapse:collapse;min-width:560px;width:100%}
 /* ============================= IMPRESSION ============================= */
 #print-root{display:none}
 #print-root img.print-logo{height:52px;width:auto;display:block;margin:0 auto 10px}
+/* Marges de page à 0 : supprime l'en-tête et le pied de page ajoutés par le
+   navigateur (adresse du site, date, numéros de page). */
+@page{size:A4 portrait;margin:0}
 @media print{
   #app,#login-screen,#toast-root,#modal-root,#sidebar,#topbar{display:none!important}
-  #print-root{display:block;font-size:13px}
+  #print-root{display:block;font-size:13px;padding:14mm 12mm}
   body{background:#fff}
+  /* aucun lien ni URL imprimé */
+  a,a[href]{color:#000!important;text-decoration:none!important}
+  a[href]::after,a[href]::before{content:none!important}
 }
 
 /* ============================= RESPONSIVE ============================= */
