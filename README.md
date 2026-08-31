@@ -144,6 +144,36 @@ paiement : `30 + jours de délai`, « Comptant » = 30).
   « NON RENSEIGNÉ » et **exclus** du meilleur prix, du meilleur total, du classement et du score.
   Un message le rappelle lors du passage à l'étape suivante.
 
+## Chaîne de publication (centre de commandement)
+
+Toute modification est faite ici, puis livrée automatiquement :
+
+```
+   modifications du code
+            │
+            ▼
+   node scripts/publish.mjs "message"     ← une seule commande
+            │
+            ├─1. régénère standalone/index.html
+            ├─2. npm run build  (TypeScript + ESLint)
+            ├─3. git commit
+            ├─4. git push → GitHub (branche main)
+            └─5. attend le redéploiement Vercel et le vérifie
+            │
+            ▼
+   GitHub  ──(auto)──►  Vercel  ──►  https://voomnetachat.vercel.app
+```
+
+Exemples :
+
+```bash
+node scripts/publish.mjs "Ajout du rapport mensuel"
+node scripts/publish.mjs " Correction d'un bug d'affichage" --no-build
+```
+
+Ce qui reste à faire de votre côté (une seule fois) : les **variables d'environnement Vercel**
+et l'exécution du **SQL Supabase** — ces deux consoles ne sont pas accessibles de l'extérieur.
+
 ## Connexion à Supabase (optionnelle mais recommandée en équipe)
 
 Sans configuration, l'application fonctionne en **mode démonstration locale** (localStorage).
