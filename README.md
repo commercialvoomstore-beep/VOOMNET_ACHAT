@@ -144,6 +144,37 @@ paiement : `30 + jours de délai`, « Comptant » = 30).
   « NON RENSEIGNÉ » et **exclus** du meilleur prix, du meilleur total, du classement et du score.
   Un message le rappelle lors du passage à l'étape suivante.
 
+## Suppressions réservées à l'administrateur
+
+Une icône **🗑️** apparaît pour l'administrateur (et uniquement pour lui) sur chaque écran concerné.
+Toute suppression demande une **confirmation** et applique les règles suivantes :
+
+| Élément | Effet de la suppression |
+|---|---|
+| **Demande** | supprime la demande **et** ses commandes et réceptions liées, ainsi que les notifications associées |
+| **Commande** | supprime la commande **et** sa réception ; la demande redevient **APPROUVÉE** (une nouvelle commande peut être créée) |
+| **Réception** | supprime la réception ; la commande redevient **à réceptionner** (la demande repasse « COMMANDE PASSÉE ») |
+| **Utilisateur** | refusée si l'utilisateur est rattaché à des demandes (→ le désactiver) ou s'il s'agit de son propre compte |
+
+Chaque suppression est tracée dans l'historique de la demande concernée.
+
+## Exports
+
+| Écran | Excel | PDF | CSV (secours) |
+|---|---|---|---|
+| Demandes | 📊 Exporter Excel | 📄 PDF | ✔ |
+| Commandes | 📊 Exporter Excel | 📄 PDF | ✔ |
+| Réceptions | 📊 Exporter Excel | 📄 PDF | ✔ |
+| Fournisseurs | 📊 Excel / 🧾 JSON / 📄 CSV | — | ✔ |
+| Comparaison (étape 3) | 📊 Exporter la comparaison (2 onglets) | — | ✔ |
+
+Les exports PDF sont générés côté navigateur avec **jsPDF + AutoTable** (chargés à la demande depuis le CDN) :
+en-tête VOOMNET, date et auteur, tableau paginé, pied de page « Page x / y ».
+**Si le CDN est indisponible, l'export bascule automatiquement sur l'impression** (fenêtre d'impression →
+« Enregistrer au format PDF ») : aucune fonctionnalité n'est perdue hors-ligne.
+
+Les exports respectent les droits : un demandeur n'exporte que ses propres données.
+
 ## Masquer les comptes de démonstration (déploiement public / Vercel)
 
 Par défaut, le bloc **« Comptes de démonstration »** de l'écran de connexion est :
