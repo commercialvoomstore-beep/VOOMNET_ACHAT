@@ -309,3 +309,23 @@ table.cmp{border-collapse:collapse;min-width:560px;width:100%}
 .poids-item input:focus{outline:none;border-color:var(--primary)}
 .chosen-banner .btn{margin-left:auto;flex-shrink:0}
 @media(max-width:560px){.nego-count{max-width:100%}}
+
+/* ============================= ALERTES & RELANCES ============================= */
+.alertes-bandeau{border:1.5px solid #fdba74;background:#fff7ed;border-radius:12px;padding:12px 14px;margin-bottom:16px;box-shadow:var(--shadow)}
+.alertes-bandeau.urgent{border-color:#fca5a5;background:#fef2f2}
+.ab-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13.5px;color:#9a3412;margin-bottom:8px}
+.alertes-bandeau.urgent .ab-head{color:#991b1b}
+.ab-seuils{margin-left:auto;font-size:11px;color:var(--muted);font-weight:600}
+.ab-list{list-style:none;padding:0}
+.ab-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px dashed rgba(0,0,0,.09);font-size:12.5px}
+.ab-item:first-child{border-top:none}
+.ab-txt{flex:1}
+.ab-item.urgent .ab-txt{font-weight:800;color:#991b1b}
+.ab-item.alerte .ab-txt{font-weight:700;color:#9a3412}
+.notif-item[data-act]{cursor:pointer;transition:.15s}
+.notif-item[data-act]:hover{filter:brightness(.97)}
+.notif-item.urgent{background:#fef2f2}
+.notif-item.alerte{background:#fff7ed}
+.notif-item.urgent.unread{border-left:4px solid var(--red)}
+.notif-item.alerte.unread{border-left:4px solid #f59e0b}
+.notif-head .badge{margin-left:6px}
