@@ -38,8 +38,16 @@ if (!message) fail('Message de commit manquant. Exemple : node scripts/publish.m
 
 /* ---------- 0. état du dépôt ---------- */
 step(0, "Vérification du dépôt");
-const remote = run("git remote get-url origin");
-if (!remote.ok || !remote.out.trim()) fail("Aucun dépôt distant « origin » configuré");
+/* Le fichier .git/config n'étant pas conservé entre les sessions de travail,
+   on recrée le distant automatiquement si besoin. */
+const REMOTE = process.env.GIT_REMOTE || "git@github.com:commercialvoomstore-beep/VOOMNET_ACHAT.git";
+let remote = run("git remote get-url origin");
+if (!remote.ok || !remote.out.trim()) {
+  console.log("   ⚠ aucun distant configuré → ajout de", REMOTE);
+  run(`git remote add origin ${REMOTE}`);
+  remote = run("git remote get-url origin");
+}
+if (!remote.ok || !remote.out.trim()) fail("Impossible de configurer le dépôt distant");
 console.log("   remote :", remote.out.trim());
 const branch = run("git rev-parse --abbrev-ref HEAD").out.trim();
 console.log("   branche :", branch);
@@ -54,6 +62,14 @@ if (fs.existsSync(keyPath)) {
   console.log("   clé SSH :", keyPath);
 } else {
   console.log("   ⚠ clé SSH introuvable :", keyPath, "→ le push exigera vos identifiants");
+}
+
+/* ---------- 0b. dépendances (node_modules n'est pas conservé entre les sessions) ---------- */
+if (!fs.existsSync(path.join(root, "node_modules", "next"))) {
+  step("0b", "Installation des dépendances (node_modules absent)");
+  const r = run("npm install", { stdio: "pipe" });
+  if (!r.ok) fail("npm install a échoué\n" + r.out.slice(-1200));
+  console.log("   ✔ dépendances installées");
 }
 
 /* ---------- 1. version autonome ---------- */
