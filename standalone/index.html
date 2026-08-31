@@ -6,6 +6,8 @@
 <title>VOOMNET — Gestion des Achats</title>
 <!-- SheetJS (lecture/écriture Excel .xlsx). Sans Internet, l'application reste 100 % fonctionnelle en CSV et JSON. -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- Supabase (optionnel) : décommentez ce bloc et renseignez vos clés pour synchroniser les données
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> -->
 <style>
 /* ============================= RESET & VARIABLES ============================= */
 *{margin:0;padding:0;box-sizing:border-box}
@@ -383,6 +385,188 @@ table.cmp{border-collapse:collapse;min-width:560px;width:100%}
    Application autonome générée depuis les sources Next.js
    (app/globals.css + scripts/shell.html + lib/voomnet.js).
    ================================================================ */
+
+/* ---------- Supabase (optionnel) ----------
+   Renseignez vos clés ci-dessous (Projet Supabase → Settings → API) pour
+   synchroniser les données entre plusieurs postes. Laisser vide = mode local. */
+window.VOOMNET_SUPABASE = { url: "", key: "" };
+
+/* Couche de synchronisation Supabase (lib/supabaseSync.js) */
+/* ================================================================
+   VOOMNET TECHNOLOGY — Couche de synchronisation Supabase
+   ----------------------------------------------------------------
+   Rôle : garder l'objet DB (déjà utilisé par tous les écrans) en
+   miroir d'une base Supabase, SANS modifier la logique métier.
+
+   Principe :
+     • l'application continue de travailler sur l'objet DB en mémoire ;
+     • saveDB() déclenche une synchro DIFFÉRÉE (400 ms) qui n'envoie
+       que les lignes ajoutées / modifiées / supprimées ;
+     • au démarrage, on charge depuis Supabase (après l'affichage du
+       cache local, pour rester instantané) ;
+     • le temps réel (postgres_changes) rafraîchit les autres postes.
+
+   Ce fichier est partagé : importé par Next.js et inliné tel quel
+   dans la version autonome index.html (le générateur retire « export »).
+   ================================================================ */
+
+const VN_TABLES = ['users', 'suppliers', 'requests', 'orders', 'receptions', 'notifications', 'meta'];
+
+/* ---------- Objets métier  <->  lignes SQL ---------- */
+const VN_MAP = {
+  users: {
+    to: u => ({ id: u.id, nom: u.nom, identifiant: u.identifiant, email: u.email || '', tel: u.tel || '', service: u.service || '', fonction: u.fonction || '', password: u.password || '', role: u.role, statut: u.statut }),
+    from: r => ({ id: r.id, nom: r.nom, identifiant: r.identifiant, email: r.email, tel: r.tel, service: r.service, fonction: r.fonction, password: r.password, role: r.role, statut: r.statut })
+  },
+  suppliers: {
+    to: s => ({ id: s.id, nom: s.nom, references: s.references || '', emplacement: s.emplacement || '', whatsapp: s.whatsapp || '', site: s.site || '', statut: s.statut }),
+    from: r => ({ id: r.id, nom: r.nom, references: r.references, emplacement: r.emplacement, whatsapp: r.whatsapp, site: r.site, statut: r.statut })
+  },
+  requests: {
+    to: r => ({ id: r.id, numero: r.numero, date: r.date, demandeur_id: r.demandeurId, service: r.service || '', priorite: r.priorite, motif: r.motif || '', articles: r.articles || [], supplier_ids: r.supplierIds || [], offers: r.offers || {}, chosen_supplier_id: r.chosenSupplierId || null, justification: r.justification || '', statut: r.statut, submitted_at: r.submittedAt || null, step: r.step || null, validation: r.validation || null, history: r.history || [] }),
+    from: r => ({ id: r.id, numero: r.numero, date: r.date, demandeurId: r.demandeur_id, service: r.service, priorite: r.priorite, motif: r.motif, articles: r.articles || [], supplierIds: r.supplier_ids || [], offers: r.offers || {}, chosenSupplierId: r.chosen_supplier_id || null, justification: r.justification, statut: r.statut, submittedAt: r.submitted_at || null, step: r.step || null, validation: r.validation || null, history: r.history || [] })
+  },
+  orders: {
+    to: o => ({ id: o.id, numero: o.numero, request_id: o.requestId, supplier_id: o.supplierId, date: o.date, total: +o.total || 0, delai: o.delai || '', statut: o.statut, lignes: o.lignes || [] }),
+    from: r => ({ id: r.id, numero: r.numero, requestId: r.request_id, supplierId: r.supplier_id, date: r.date, total: +r.total || 0, delai: r.delai, statut: r.statut, lignes: r.lignes || [] })
+  },
+  receptions: {
+    to: x => ({ id: x.id, order_id: x.orderId, date: x.date || null, observations: x.observations || '', statut: x.statut, lignes: x.lignes || [] }),
+    from: r => ({ id: r.id, orderId: r.order_id, date: r.date || null, observations: r.observations, statut: r.statut, lignes: r.lignes || [] })
+  },
+  notifications: {
+    to: n => ({ id: n.id, user_id: n.userId, texte: n.texte, date: n.date, lu: !!n.lu }),
+    from: r => ({ id: r.id, userId: r.user_id, texte: r.texte, date: r.date, lu: !!r.lu })
+  },
+  meta: {
+    to: m => ({ id: 'app', ach_counter: +m.achCounter || 0, bc_counter: +m.bcCounter || 0, seuil_offres: +m.seuilOffres || 3, tva: +m.tva || 0, poids: m.poids || {} }),
+    from: r => ({ achCounter: +r.ach_counter || 0, bcCounter: +r.bc_counter || 0, seuilOffres: +r.seuil_offres || 3, tva: +r.tva || 0, poids: r.poids || {} })
+  }
+};
+
+function createSupabaseSync(createClient, url, key) {
+  const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  const snapshot = {};                 // table -> Map(id -> JSON de la ligne)
+  let timer = null, busy = false, selfUntil = 0;
+  let lastError = null;
+
+  const rowsOf = (db, t) => (t === 'meta' ? [VN_MAP.meta.to((db && db.meta) || {})] : ((db && db[t]) || []).map(VN_MAP[t].to));
+  const snapOf = rows => new Map(rows.map(r => [r.id, JSON.stringify(r)]));
+
+  /* ---------- Lecture ---------- */
+  async function fetchAll() {
+    const out = {};
+    for (const t of VN_TABLES) {
+      const { data, error } = await client.from(t).select('*');
+      if (error) { lastError = error.message; throw new Error(t + ' : ' + error.message); }
+      if (t === 'meta') { out.meta = data && data.length ? VN_MAP.meta.from(data[0]) : null; }
+      else out[t] = (data || []).map(VN_MAP[t].from);
+    }
+    /* base vide : on ne renvoie rien, l'app poussera son jeu de démo au 1er saveDB() */
+    if (!out.users || !out.users.length) return null;
+    if (!out.meta) out.meta = null;
+    VN_TABLES.forEach(t => { snapshot[t] = snapOf(rowsOf(out, t)); });
+    return out;
+  }
+
+  /* ---------- Écriture (différentielle) ---------- */
+  async function push(db) {
+    if (busy) { timer = setTimeout(() => push(db), 500); return; }
+    busy = true; selfUntil = Date.now() + 1500;
+    try {
+      for (const t of VN_TABLES) {
+        const rows = rowsOf(db, t);
+        const next = snapOf(rows);
+        const prev = snapshot[t] || new Map();
+        if (t === 'meta') {
+          const changed = !prev.size || prev.get('app') !== next.get('app');
+          if (changed) {
+            const { error } = await client.from('meta').upsert(rows);
+            if (error) throw new Error('meta : ' + error.message);
+          }
+          snapshot[t] = next; continue;
+        }
+        const upserts = rows.filter(r => prev.get(r.id) !== next.get(r.id));
+        const deletes = [...prev.keys()].filter(id => !next.has(id));
+        if (upserts.length) {
+          const { error } = await client.from(t).upsert(upserts);
+          if (error) throw new Error(t + ' : ' + error.message);
+        }
+        if (deletes.length) {
+          const { error } = await client.from(t).delete().in('id', deletes);
+          if (error) throw new Error(t + ' (suppression) : ' + error.message);
+        }
+        snapshot[t] = next;
+      }
+      lastError = null;
+      return true;
+    } catch (e) {
+      lastError = e.message;
+      return false;
+    } finally {
+      busy = false;
+    }
+  }
+  /* Synchro différée : plusieurs saveDB() rapprochés = un seul aller-retour */
+  function sync(db) {
+    clearTimeout(timer);
+    timer = setTimeout(() => { push(db); }, 400);
+  }
+
+  /* ---------- Réinitialisation : on remplace tout le distant ---------- */
+  async function reset(db) {
+    busy = true; selfUntil = Date.now() + 3000;
+    try {
+      for (const t of ['notifications', 'receptions', 'orders', 'requests', 'suppliers', 'users', 'meta']) {
+        const { error } = await client.from(t).delete().neq('id', '__rien__');
+        if (error) throw new Error(t + ' : ' + error.message);
+      }
+      for (const t of VN_TABLES) {
+        const rows = rowsOf(db, t);
+        if (rows.length) {
+          const { error } = await client.from(t).insert(rows);
+          if (error) throw new Error(t + ' : ' + error.message);
+        }
+        snapshot[t] = snapOf(rows);
+      }
+      return true;
+    } catch (e) { lastError = e.message; return false; }
+    finally { busy = false; }
+  }
+
+  /* ---------- Temps réel ---------- */
+  function subscribe(onChange) {
+    try {
+      const ch = client.channel('voomnet-sync')
+        .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+          if (Date.now() < selfUntil) return;      // on ignore nos propres écritures
+          onChange();
+        })
+        .subscribe();
+      return () => { try { client.removeChannel(ch); } catch (e) { /* ignoré */ } };
+    } catch (e) { return () => {}; }
+  }
+
+  return {
+    client,
+    enabled: () => true,
+    tables: VN_TABLES,
+    fetchAll, sync, push, reset, subscribe,
+    getError: () => lastError,
+    isSelfWrite: () => Date.now() < selfUntil
+  };
+}
+
+/* Branchement : crée le client si les clés sont renseignées */
+(function(){
+  var cfg = window.VOOMNET_SUPABASE || {};
+  if (!cfg.url || !cfg.key || typeof createSupabaseSync !== 'function') return;
+  var make = window.supabase && window.supabase.createClient;
+  if (!make) { if (window.console) console.warn('[VOOMNET] bibliothèque Supabase absente — mode local'); return; }
+  try { globalThis.__voomnetSupabase = createSupabaseSync(make, cfg.url, cfg.key); }
+  catch(e){ if (window.console) console.warn('[VOOMNET] Supabase non initialisé — mode local', e); }
+})();
+
 const XLSX = globalThis.XLSX; // bibliothèque SheetJS chargée depuis le CDN
 // filtre catégorie fournisseur (assistant)
 
@@ -442,7 +626,15 @@ let DB = null;
 let sessionUser = null;
 let state = { page:'dashboard', params:{}, nav:'dashboard' };
 
-function saveDB(){ storage.setItem(DB_KEY, JSON.stringify(DB)); }
+/* --- Couche Supabase OPTIONNELLE -------------------------------------
+   « remote » est fourni par l'hôte (Next.js ou index.html autonome) via
+   globalThis.__voomnetSupabase — voir lib/supabaseSync.js.
+   S'il est absent ou injoignable, l'application fonctionne exactement
+   comme avant, sur le localStorage.                                     */
+let remote = null;
+let pendingRemote = null;
+
+function saveDB(){ storage.setItem(DB_KEY, JSON.stringify(DB)); if (remote) remote.sync(DB); }
 function loadDB(){
   try { DB = JSON.parse(storage.getItem(DB_KEY)); } catch(e){ DB = null; }
   if (!DB || !DB.meta || !Array.isArray(DB.users)) { DB = seedData(); saveDB(); }
@@ -450,6 +642,7 @@ function loadDB(){
 function resetDemoData(){
   storage.removeItem(DB_KEY);
   DB = seedData(); saveDB();
+  if (remote) remote.reset(DB);       // remplace aussi les données distantes
 }
 
 /* ============================= 3. DONNÉES DE DÉMONSTRATION ============================= */
@@ -703,6 +896,12 @@ function go(page, params = {}){
 }
 
 function render(){
+  /* application différée d'un jeu de données reçu de Supabase
+     (jamais pendant la saisie d'un assistant ou l'ouverture d'une modale) */
+  if (pendingRemote && state.page !== 'nouvelleDemande' && !$('#modal-root').classList.contains('open')){
+    DB = pendingRemote; pendingRemote = null;
+    storage.setItem(DB_KEY, JSON.stringify(DB));
+  }
   $('#notif-panel').classList.add('hidden');
   buildSidebar();
   updateBell();
@@ -3049,13 +3248,44 @@ document.addEventListener('change', e => {
 /* Connexion */
 $('#login-form').addEventListener('submit', e => { e.preventDefault(); doLogin($('#login-id').value.trim(), $('#login-pw').value); });
 
+/* ---------- Synchronisation Supabase (optionnelle) ---------- */
+function applyRemote(db){
+  if (!db) return;
+  if (!db.meta) db.meta = DB.meta;                       // méta distante absente : on garde la locale
+  if (!Array.isArray(db.users)) return;
+  if (state.page === 'nouvelleDemande' || $('#modal-root').classList.contains('open')){ pendingRemote = db; return; }
+  DB = db; pendingRemote = null;
+  storage.setItem(DB_KEY, JSON.stringify(DB));
+  if (sessionUser) render();
+}
+function hydrateRemote(){
+  if (!remote) return;
+  remote.fetchAll().then(db => {
+    if (!db){ if (remote.push) remote.push(DB); return; }   // base distante vide → on pousse le jeu de démo
+    applyRemote(db);
+    if (sessionUser) toast('☁️ Données synchronisées avec Supabase', 'ok');
+  }).catch(err => {
+    if (sessionUser) toast('⚠️ Supabase injoignable — fonctionnement local (' + (err && err.message ? err.message : 'erreur') + ')', 'err');
+  });
+}
+function startRealtime(){
+  if (!remote || typeof remote.subscribe !== 'function') return;
+  remote.subscribe(() => {
+    if (remote.isSelfWrite && remote.isSelfWrite()) return;    // on ignore nos propres écritures
+    remote.fetchAll().then(db => { if (db) applyRemote(db); }).catch(() => {});
+  });
+}
+
 /* Démarrage */
 (function init(){
+  remote = (typeof globalThis !== 'undefined' && globalThis.__voomnetSupabase) ? globalThis.__voomnetSupabase : null;
   loadDB();
   const sid = storage.getItem(SESSION_KEY);
   const u = sid ? byId(DB.users, sid) : null;
   if (u && u.statut === 'Actif'){ sessionUser = u; showApp(); }
   else showLogin();
+  hydrateRemote();
+  startRealtime();
 })();
 </script>
 </body>

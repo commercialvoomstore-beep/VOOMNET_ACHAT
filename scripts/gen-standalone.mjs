@@ -17,6 +17,16 @@ const read = (f) => fs.readFileSync(path.join(root, f), "utf8");
 const css = read("app/globals.css").trim();
 let shell = read("scripts/shell.html").trim();
 
+/* --supabase-url=… --supabase-key=… : active la synchronisation Supabase
+   dans le fichier autonome (sinon : fonctionnement local, comme avant). */
+const arg = (n) => { const p = process.argv.find((a) => a.startsWith("--" + n + "=")); return p ? p.slice(n.length + 3) : ""; };
+const sbUrl = arg("supabase-url") || process.env.SUPABASE_URL || "";
+const sbKey = arg("supabase-key") || process.env.SUPABASE_ANON_KEY || "";
+const supabaseActivated = !!(sbUrl && sbKey);
+
+/* module de synchronisation : on retire « export » pour l'inclure tel quel */
+const sync = read("lib/supabaseSync.js").replace(/^export /gm, "").trim();
+
 /* --no-demo : retire le bloc « Comptes de démonstration » du fichier autonome
    (utile pour publier l'index.html sans exposer les identifiants). */
 const noDemo = process.argv.includes("--no-demo") || process.env.DEMO_MODE === "0";
@@ -42,6 +52,13 @@ const html = `<!DOCTYPE html>
 <title>VOOMNET — Gestion des Achats</title>
 <!-- SheetJS (lecture/écriture Excel .xlsx). Sans Internet, l'application reste 100 % fonctionnelle en CSV et JSON. -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>
+${
+  supabaseActivated
+    ? `<!-- Supabase : synchronisation des données (clé ANON publique) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>`
+    : `<!-- Supabase (optionnel) : décommentez ce bloc et renseignez vos clés pour synchroniser les données
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script> -->`
+}
 <style>
 ${css}
 </style>
@@ -56,6 +73,25 @@ ${shell}
    Application autonome générée depuis les sources Next.js
    (app/globals.css + scripts/shell.html + lib/voomnet.js).
    ================================================================ */
+
+/* ---------- Supabase (optionnel) ----------
+   Renseignez vos clés ci-dessous (Projet Supabase → Settings → API) pour
+   synchroniser les données entre plusieurs postes. Laisser vide = mode local. */
+window.VOOMNET_SUPABASE = { url: ${JSON.stringify(sbUrl)}, key: ${JSON.stringify(sbKey)} };
+
+/* Couche de synchronisation Supabase (lib/supabaseSync.js) */
+${sync}
+
+/* Branchement : crée le client si les clés sont renseignées */
+(function(){
+  var cfg = window.VOOMNET_SUPABASE || {};
+  if (!cfg.url || !cfg.key || typeof createSupabaseSync !== 'function') return;
+  var make = window.supabase && window.supabase.createClient;
+  if (!make) { if (window.console) console.warn('[VOOMNET] bibliothèque Supabase absente — mode local'); return; }
+  try { globalThis.__voomnetSupabase = createSupabaseSync(make, cfg.url, cfg.key); }
+  catch(e){ if (window.console) console.warn('[VOOMNET] Supabase non initialisé — mode local', e); }
+})();
+
 const XLSX = globalThis.XLSX; // bibliothèque SheetJS chargée depuis le CDN
 ${js}
 <\/script>
@@ -73,4 +109,5 @@ for (const f of ["modele_fournisseurs_voomnet.csv", "modele_fournisseurs_voomnet
 
 console.log(`✔ standalone/index.html généré (${(html.length / 1024).toFixed(0)} Ko)`);
 console.log(noDemo ? "✔ bloc « Comptes de démonstration » retiré (--no-demo)" : "✔ bloc « Comptes de démonstration » conservé");
+console.log(supabaseActivated ? "✔ Supabase activé (synchronisation des données)" : "✔ Supabase non configuré (mode local) — voir --supabase-url / --supabase-key");
 console.log("✔ modèles CSV/JSON copiés dans standalone/");

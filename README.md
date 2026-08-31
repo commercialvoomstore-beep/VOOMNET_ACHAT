@@ -144,6 +144,55 @@ paiement : `30 + jours de délai`, « Comptant » = 30).
   « NON RENSEIGNÉ » et **exclus** du meilleur prix, du meilleur total, du classement et du score.
   Un message le rappelle lors du passage à l'étape suivante.
 
+## Connexion à Supabase (optionnelle mais recommandée en équipe)
+
+Sans configuration, l'application fonctionne en **mode démonstration locale** (localStorage).
+Avec Supabase, **tous les postes partagent les mêmes données**, en temps réel.
+
+### 1. Créer les tables
+
+Ouvrez **Supabase → SQL Editor → New query**, collez le contenu de
+**`supabase/schema.sql`** et exécutez. Il crée 7 tables
+(`users`, `suppliers`, `requests`, `orders`, `receptions`, `notifications`, `meta`),
+les index, les politiques RLS et l'abonnement temps réel.
+
+### 2. Renseigner les clés
+
+```bash
+cp .env.example .env.local
+# puis :
+NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...      # clé « anon public » uniquement
+```
+
+Sur **Vercel** : *Settings → Environment Variables* → ajoutez les deux variables → **Redeploy**.
+
+### 3. C'est tout
+
+Au premier démarrage, l'application pousse son jeu de démonstration vers Supabase
+(5 utilisateurs, 10 fournisseurs, 5 demandes, 2 commandes, 2 réceptions).
+
+### Comment ça marche
+
+```
+Écrans ──► DB (mémoire) ──► saveDB() ──► localStorage (immédiat)
+                                    └──► Supabase (synchro différée 400 ms)
+loadDB() ◄── cache local (affichage instantané) puis hydratation Supabase
+```
+
+* **Aucune règle de gestion n'a changé** : `DB` reste l'objet utilisé par tous les écrans.
+* **Synchro différentielle** : seules les lignes ajoutées / modifiées / supprimées sont envoyées.
+* **Temps réel** : un autre poste modifie une donnée → vos écrans se rafraîchissent
+  (jamais pendant la saisie d'un assistant ou l'ouverture d'une modale).
+* **Repli automatique** : Supabase absent ou injoignable → fonctionnement local + message.
+* **Réinitialisation** (⚙️ Paramètres) écrase aussi les données distantes.
+
+Authentification : le mode « identifiant + mot de passe » de la démonstration est conservé
+(les utilisateurs sont synchronisés dans la table `users`). Pour passer sur **Supabase Auth**,
+voir les commentaires en fin de `supabase/schema.sql`.
+
+Version autonome : `node scripts/gen-standalone.mjs --supabase-url=… --supabase-key=…`
+
 ## Suppressions réservées à l'administrateur
 
 Une icône **🗑️** apparaît pour l'administrateur (et uniquement pour lui) sur chaque écran concerné.
