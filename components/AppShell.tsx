@@ -8,9 +8,8 @@ export default function AppShell() {
     <div id="app" className="hidden">
       <aside id="sidebar">
         <div className="sidebar-logo">
-          <div className="mini">V</div>
+          <img src="/voomnet-logo.png" alt="VOOMNET TECHNOLOGY" className="sidebar-logo-img" />
           <div>
-            <b>VOOMNET</b>
             <span>GESTION DES ACHATS</span>
           </div>
         </div>

@@ -27,6 +27,10 @@ const supabaseActivated = !!(sbUrl && sbKey);
 /* module de synchronisation : on retire « export » pour l'inclure tel quel */
 const sync = read("lib/supabaseSync.js").replace(/^export /gm, "").trim();
 
+/* logo embarqué en base64 : le fichier autonome fonctionne ainsi hors ligne */
+const logoData = "data:image/png;base64," + fs.readFileSync(path.join(root, "public", "voomnet-logo.png")).toString("base64");
+const iconData = "data:image/png;base64," + fs.readFileSync(path.join(root, "public", "voomnet-icon.png")).toString("base64");
+
 /* --no-demo : retire le bloc « Comptes de démonstration » du fichier autonome
    (utile pour publier l'index.html sans exposer les identifiants). */
 const noDemo = process.argv.includes("--no-demo") || process.env.DEMO_MODE === "0";
@@ -44,7 +48,7 @@ js = js.slice(start + marker.length);
 js = js.replace(/\n\s*\}\s*$/, "\n");            // fermeture de initVoomnet()
 js = js.split("\n").map((l) => (l.startsWith("  ") ? l.slice(2) : l)).join("\n").trim();
 
-const html = `<!DOCTYPE html>
+const htmlRaw = `<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -101,6 +105,11 @@ ${js}
 
 const outDir = path.join(root, "standalone");
 fs.mkdirSync(outDir, { recursive: true });
+/* remplacement des chemins du logo par les données embarquées + favicon */
+const html = htmlRaw
+  .split('src="/voomnet-logo.png"').join(`src="${logoData}"`)
+  .replace("</head>", `  <link rel="icon" href="${iconData}">\n</head>`);
+
 fs.writeFileSync(path.join(outDir, "index.html"), html, "utf8");
 
 for (const f of ["modele_fournisseurs_voomnet.csv", "modele_fournisseurs_voomnet.json"]) {
