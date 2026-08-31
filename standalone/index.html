@@ -921,6 +921,21 @@ function showApp(){
   $('#tu-name').textContent = sessionUser.nom;
   $('#tu-role').textContent = ROLE_LABELS[sessionUser.role];
   genererRappels();          // relances au moment de la connexion
+  autoriserSons();           // les sons ne se déclenchent qu'après l'ouverture de session
+  /* petit résumé sonore si des alertes sont en cours (uniquement pour l'utilisateur
+     qui vient de se connecter : évite qu'une minuterie d'une session précédente
+     joue un son pour quelqu'un d'autre) */
+  const uidConnexion = sessionUser ? sessionUser.id : '';
+  setTimeout(() => {
+    if (!sonActif() || !sessionUser || sessionUser.id !== uidConnexion) return;
+    const l = alertesActives().filter(a => {
+      if (sessionUser.role === 'admin') return true;
+      if (sessionUser.role === 'responsable') return a.cibles === 'responsable';
+      return a.cibles === 'demandeur' && a.demandeurId === sessionUser.id;
+    });
+    if (l.some(a => a.niveau === 'urgent')) jouerSonNotif('urgent');
+    else if (l.length) jouerSonNotif('alerte');
+  }, 3000);
   go('dashboard');
 }
 
@@ -1575,6 +1590,8 @@ function notify(userId, texte, opts){
   const o = opts || {};
   DB.notifications.unshift({ id:uid('n'), userId, texte, date:nowISO(), lu:false,
     niveau: o.niveau || 'info', cle: o.cle || '', requestId: o.requestId || '' });
+  /* son uniquement pour l'utilisateur connecté, et jamais au démarrage */
+  if (sessionUser && userId === sessionUser.id && sonPret) jouerSonNotif(o.niveau || 'info');
 }
 function notifyRole(role, texte){ DB.users.filter(u => u.role === role && u.statut === 'Actif').forEach(u => notify(u.id, texte)); }
 function unreadCount(){ return DB.notifications.filter(n => n.userId === sessionUser.id && !n.lu).length; }
@@ -1583,6 +1600,56 @@ function updateBell(){
   b.textContent = n; b.style.display = n ? 'flex' : 'none';
 }
 const notifIcon = (n) => n.niveau === 'urgent' ? '🔴' : n.niveau === 'alerte' ? '🟠' : '🔵';
+
+/* ---------- Sons de notification (Web Audio API : aucun fichier à télécharger,
+   fonctionne donc aussi dans la version autonome et hors-ligne) ---------- */
+const SON_CLE = 'voomnet_son';
+let audioCtx = null;
+const sonActif = () => storage.getItem(SON_CLE) !== '0';          // actif par défaut
+function setSonActif(on){ storage.setItem(SON_CLE, on ? '1' : '0'); }
+let sonPret = false;                                              // évite les bips au démarrage
+function autoriserSons(){ setTimeout(() => { sonPret = true; }, 2500); }
+
+function bipe(freq, decalage, duree, volume){
+  try {
+    const Ctx = (typeof window !== 'undefined') && (window.AudioContext || window.webkitAudioContext);
+    if (!Ctx) return;
+    if (!audioCtx) audioCtx = new Ctx();
+    if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume();
+    const t0 = audioCtx.currentTime + decalage;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(volume, t0 + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duree);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t0); osc.stop(t0 + duree + 0.03);
+  } catch(e){ /* audio indisponible : on ignore */ }
+}
+
+/* Mélodies : une note = information, deux = alerte, trois aiguës = urgence */
+let dernierSon = 0;
+function jouerSonNotif(niveau, force){
+  if (!sonActif() || !sessionUser) return;
+  /* pare-chevauchement : jamais deux mélodies à moins de 800 ms (sauf test) */
+  const maintenant = Date.now();
+  if (!force && maintenant - dernierSon < 800) return;
+  dernierSon = maintenant;
+  if (niveau === 'urgent')      { bipe(880, 0, .15, .20); bipe(988, .19, .15, .20); bipe(1175, .38, .20, .20); }
+  else if (niveau === 'alerte') { bipe(660, 0, .13, .15); bipe(523, .17, .20, .15); }
+  else                          { bipe(587, 0, .12, .11); }
+}
+/* Bande d'essai : les trois sons à la suite */
+function testerSons(){
+  if (!sonActif()){ toast('Les sons sont désactivés — réactivez-les dans ⚙️ Paramètres.', 'warn'); return; }
+  sonPret = true;
+  jouerSonNotif('info', true);
+  setTimeout(() => jouerSonNotif('alerte', true), 750);
+  setTimeout(() => jouerSonNotif('urgent', true), 1500);
+  toast('Test sonore : information 🟠 alerte 🔴 urgence', 'ok');
+}
 function renderNotifPanel(){
   const ordre = { urgent: 0, alerte: 1, info: 2 };
   const list = DB.notifications.filter(n => n.userId === sessionUser.id)
@@ -3291,6 +3358,19 @@ function viewSettings(){
       <span class="hint">Score = moyenne pondérée des notes prix (moins cher = 100), délai (plus rapide = 100), garantie (la plus longue = 100) et paiement (30 + jours de délai).</span>
     </div>
   </div>
+  <div class="card"><h2>🔔 Notifications et sons</h2>
+    <div class="form-grid">
+      <div class="field"><label>Sons de notification</label>
+        <select data-son="1">
+          <option value="1" ${sonActif() ? 'selected' : ''}>Activés</option>
+          <option value="0" ${sonActif() ? '' : 'selected'}>Désactivés</option>
+        </select>
+        <span class="hint">Signal sonore à chaque nouvelle notification : 1 note = information 🟠, 2 notes = alerte, 3 notes aiguës = urgence 🔴.</span></div>
+      <div class="field"><label>Essayer</label>
+        <button class="btn outline" data-act="test-son">🔊 Tester les sons</button>
+        <span class="hint">Le son est produit par le navigateur (aucun fichier audio) : pensez à monter le volume de votre poste.</span></div>
+    </div>
+  </div>
   <div class="card"><h2>♻️ Réinitialisation de la démonstration</h2>
     <p class="small text-muted" style="margin-bottom:12px">Supprime toutes les données locales (fournisseurs importés, demandes, commandes…) et recrée le jeu de données de démonstration : 5 utilisateurs, 10 fournisseurs, 5 demandes, commandes et réceptions.</p>
     <button class="btn danger" data-act="reset-demo">🗑️ Réinitialiser les données de démonstration</button>
@@ -3441,6 +3521,7 @@ document.addEventListener('click', e => {
       toast('Utilisateur ' + (u.statut==='Actif'?'réactivé ✅':'désactivé 🔴'), 'ok'); render(); break;
     }
     /* --- Paramètres --- */
+    case 'test-son':        testerSons(); break;
     case 'reset-demo': confirmModal('⚠️ Cette action va <b>supprimer toutes les données locales</b> (fournisseurs importés, demandes, commandes…) et recréer le jeu de démonstration. Continuer ?', resetDemo, 'Oui, réinitialiser'); break;
   }
 });
@@ -3494,6 +3575,11 @@ document.addEventListener('change', e => {
     const numeriques = ['seuilOffres', 'tva', 'delaiAlerte', 'delaiUrgence'];
     DB.meta[k] = numeriques.includes(k) ? Math.max(0, Math.min(k === 'tva' ? 100 : 90, +t.value || 0)) : t.value;
     saveDB(); toast('Paramètre enregistré ✅', 'ok'); render(); return;
+  }
+  if (t.dataset && t.dataset.son){
+    setSonActif(t.value === '1');
+    toast(t.value === '1' ? 'Sons de notification activés 🔊' : 'Sons de notification désactivés 🔇', 'ok');
+    render(); return;
   }
   if (t.dataset && t.dataset.poids){
     DB.meta = DB.meta || {};
@@ -3571,6 +3657,7 @@ function startRealtime(){
   hydrateRemote();
   startRealtime();
   genererRappels();          // relances automatiques (une seule fois par jour)
+  autoriserSons();           // pas de bip au chargement de la page
 })();
 </script>
 </body>
