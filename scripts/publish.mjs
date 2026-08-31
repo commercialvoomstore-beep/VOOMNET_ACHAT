@@ -123,7 +123,11 @@ console.log(`  Vercel  : ${SITE}`);
 function buildHash() {
   try {
     const html = execSync(`curl -s --max-time 30 ${SITE}`, { encoding: "utf8" });
-    const m = html.match(/\/_next\/static\/chunks\/app\/page-([a-z0-9]+)\.js/);
-    return m ? m[1] : "";
+    /* l'identifiant de build Next.js change à CHAQUE déploiement,
+       même si le contenu du bundle client reste identique */
+    const m = html.match(/\/_next\/static\/([A-Za-z0-9_-]{8,})\//);
+    if (m) return m[1];
+    const c = html.match(/\/_next\/static\/chunks\/app\/page-([a-z0-9]+)\.js/);
+    return c ? c[1] : "";
   } catch { return ""; }
 }
