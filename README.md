@@ -169,6 +169,11 @@ Sur **Vercel** : *Settings → Environment Variables* → ajoutez les deux varia
 
 ### 3. C'est tout
 
+Pour vérifier la connexion : **⚙️ Paramètres → « Base de données »** affiche
+« ☁️ Connecté à Supabase (projet.supabase.co) — dernière synchro hh:mm »
+ou « 💻 Mode local — localStorage uniquement (Supabase non configuré) ».
+C'est le moyen le plus rapide de contrôler un déploiement Vercel.
+
 Au premier démarrage, l'application pousse son jeu de démonstration vers Supabase
 (5 utilisateurs, 10 fournisseurs, 5 demandes, 2 commandes, 2 réceptions).
 
