@@ -44,6 +44,18 @@ console.log("   remote :", remote.out.trim());
 const branch = run("git rev-parse --abbrev-ref HEAD").out.trim();
 console.log("   branche :", branch);
 
+/* Clé SSH : le fichier .git/config n'étant pas conservé entre les sessions,
+   on reconfigure la commande SSH à chaque publication. */
+const home = process.env.HOME || "/home/user";
+const keyPath = process.env.SSH_KEY || path.join(home, ".ssh/id_ed25519_voomnet");
+if (fs.existsSync(keyPath)) {
+  try { fs.chmodSync(home + "/.ssh", 0o700); fs.chmodSync(keyPath, 0o600); } catch { /* ignoré */ }
+  run(`git config core.sshCommand "ssh -i ${keyPath} -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes"`);
+  console.log("   clé SSH :", keyPath);
+} else {
+  console.log("   ⚠ clé SSH introuvable :", keyPath, "→ le push exigera vos identifiants");
+}
+
 /* ---------- 1. version autonome ---------- */
 if (!noStandalone) {
   step(1, "Régénération de la version autonome (standalone/index.html)");
@@ -66,12 +78,18 @@ if (!noBuild) {
 step(3, "Commit");
 run("git add -A");
 const staged = run("git diff --cached --name-only").out.trim();
-if (!staged) { console.log("   (aucune modification à publier)"); process.exit(0); }
+const enAvance = run(`git rev-list origin/${branch}..HEAD --count`).out.trim();
+let sha = run("git rev-parse --short HEAD").out.trim();
+if (!staged) {
+  if (!enAvance || enAvance === "0") { console.log("   (déjà à jour : aucune modification à publier)"); process.exit(0); }
+  console.log(`   (rien à committer, mais ${enAvance} commit(s) local(aux) pas encore poussé(s))`);
+} else {
 console.log("   fichiers :\n" + staged.split("\n").map((f) => "     • " + f).join("\n"));
-const c = run(`git -c user.name="Arena Agent" -c user.email="agent@arena.ai" commit -q -m ${JSON.stringify(message)}`);
-if (!c.ok) fail("Le commit a échoué\n" + c.out);
-const sha = run("git rev-parse --short HEAD").out.trim();
-console.log(`   ✔ commit ${sha} — ${message}`);
+  const c = run(`git -c user.name="Arena Agent" -c user.email="agent@arena.ai" commit -q -m ${JSON.stringify(message)}`);
+  if (!c.ok) fail("Le commit a échoué\n" + c.out);
+  sha = run("git rev-parse --short HEAD").out.trim();
+  console.log(`   ✔ commit ${sha} — ${message}`);
+}
 
 /* ---------- 4. push ---------- */
 step(4, "Push vers GitHub");

@@ -168,7 +168,7 @@ Exemples :
 
 ```bash
 node scripts/publish.mjs "Ajout du rapport mensuel"
-node scripts/publish.mjs " Correction d'un bug d'affichage" --no-build
+node scripts/publish.mjs "Correction d'un bug d'affichage" --no-build
 ```
 
 Ce qui reste à faire de votre côté (une seule fois) : les **variables d'environnement Vercel**
