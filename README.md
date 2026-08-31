@@ -91,6 +91,71 @@ Champs : `FOURNISSEUR NOM · RÉFÉRENCES · EMPLACEMENT · WHATSAPP · SITE INT
 
 ---
 
+## Améliorations apportées à l'étape 3 (comparaison des prix)
+
+L'étape **3. PRIX NÉGOCIÉS** a été enrichie — c'est désormais le poste de commandement
+de la comparaison (les mêmes blocs sont repris en lecture seule à l'étape 4, à l'étape 6
+et dans le détail de la demande).
+
+### 1. Saisie assistée
+
+| Outil | Effet |
+|---|---|
+| **📋 Pré-remplir (coût présumé)** | remplit d'un clic toutes les cases vides avec le coût présumé de chaque article |
+| **⇉ Recopier par ligne** | recopie le premier prix saisi de chaque article sur tous les fournisseurs |
+| **⧉ Recopier** (par ligne d'article) | recopie le prix d'une ligne sur un seul article |
+| **🧹 Effacer les prix** | remet la grille à zéro (délais, garanties et conditions conservés) |
+| **📊 Exporter la comparaison** | exporte la grille en Excel (2 onglets : « Comparaison articles » et « Synthèse offres »), ou en CSV si SheetJS est indisponible |
+
+* Compteur de saisie **« X / Y prix saisis »** avec barre de progression.
+* Le **meilleur prix de chaque article** est surligné en vert **en direct**, dès la saisie.
+* Chaque cellule affiche le total de la ligne (`prix × quantité`) et l'**écart en %** par rapport au coût présumé.
+
+### 2. Comparaison enrichie — le coût total rendu
+
+Chaque offre est décomposée, fournisseur par fournisseur :
+
+`TOTAL ARTICLES (brut)` → `− Remise (%)` → `NET HT` → `+ TVA (%)` → `+ Frais de livraison` → **⭐ COÛT TOTAL RENDU**
+
+* La **remise** (%) et les **frais de livraison** (FCFA) sont saisis dans la grille.
+* La **TVA** est un réglage global (⚙️ Paramètres → « Comparaison des prix »), à **0 % par défaut**
+  pour ne modifier aucun montant existant.
+* L'écart par rapport à la somme présumée est affiché en FCFA **et en %**.
+* Les fournisseurs sont **classés** par coût total rendu (`1️⃣ 2️⃣ 3️⃣…`).
+
+### 3. Score multicritère et recommandation
+
+Chaque offre complète reçoit une **note sur 100** : moyenne pondérée de quatre notes
+(prix : le moins cher = 100 ; délai : le plus rapide = 100 ; garantie : la plus longue = 100 ;
+paiement : `30 + jours de délai`, « Comptant » = 30).
+
+* Pondération par défaut : **prix 50 % · délai 20 % · garantie 20 % · paiement 10 %**,
+  réglable directement dans l'étape 3 (bloc « ⚙️ Pondération ») et dans ⚙️ Paramètres.
+* Bannière **🏆 Meilleure offre globale** (étapes 3 et 4) et bouton
+  **⭐ Retenir le mieux noté** (étape 5).
+* Chip **⭐ Meilleur score** sur la colonne du fournisseur le mieux noté.
+
+### 4. Seuil d'offres complètes (paramétrable)
+
+* Une offre n'est **complète** que si chaque article a un prix négocié > 0.
+* Le passage à l'étape 4 exige **au moins 3 offres complètes** (seuil réglable de 1 à 10
+  dans ⚙️ Paramètres → « Nombre minimum d'offres complètes »).
+* Les fournisseurs sans réponse complète sont marqués **⚠️ SANS RÉPONSE**, affichés en
+  « NON RENSEIGNÉ » et **exclus** du meilleur prix, du meilleur total, du classement et du score.
+  Un message le rappelle lors du passage à l'étape suivante.
+
+## Version autonome (`standalone/index.html`)
+
+Le fichier unique `standalone/index.html` est **généré depuis les mêmes sources** que
+l'application Next.js (même CSS, même moteur) :
+
+```bash
+node scripts/gen-standalone.mjs
+```
+
+Il produit `standalone/index.html` + les modèles CSV/JSON + le `LISEZMOI.txt`.
+Ouvrez-le directement dans un navigateur : aucune installation requise.
+
 ## Stockage des données
 
 Toutes les données sont conservées dans le `localStorage` du navigateur
