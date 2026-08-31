@@ -39,7 +39,7 @@ create table public.users (
 create table public.suppliers (
   id           text primary key,
   nom          text        not null,
-  references   text,
+  "references" text,
   emplacement  text,
   whatsapp     text,
   site         text,
@@ -171,17 +171,28 @@ end $$;
 --  TEMPS RÉEL : publier les tables pour postgres_changes
 -- =====================================================================
 do $$
+declare t text;
 begin
   if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
-    alter publication supabase_realtime add table public.users, public.suppliers,
-      public.requests, public.orders, public.receptions, public.notifications, public.meta;
+    foreach t in array array['users','suppliers','requests','orders','receptions','notifications','meta']
+    loop
+      if not exists (
+        select 1 from pg_publication_tables
+        where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t
+      ) then
+        execute format('alter publication supabase_realtime add table public.%I', t);
+      end if;
+    end loop;
   end if;
+exception when others then
+  -- Le temps réel n'est pas indispensable : on prévient sans faire échouer le script
+  raise notice '[VOOMNET] publication temps réel non modifiée : %', SQLERRM;
 end $$;
 
 -- =====================================================================
 --  VÉRIFICATION
 -- =====================================================================
-select 'users' as table, count(*) from public.users
+select 'users' as nom_table, count(*) from public.users
 union all select 'suppliers', count(*) from public.suppliers
 union all select 'requests', count(*) from public.requests
 union all select 'orders', count(*) from public.orders
