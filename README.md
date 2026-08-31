@@ -144,6 +144,28 @@ paiement : `30 + jours de délai`, « Comptant » = 30).
   « NON RENSEIGNÉ » et **exclus** du meilleur prix, du meilleur total, du classement et du score.
   Un message le rappelle lors du passage à l'étape suivante.
 
+## Masquer les comptes de démonstration (déploiement public / Vercel)
+
+Par défaut, le bloc **« Comptes de démonstration »** de l'écran de connexion est :
+
+| Environnement | Affiché ? |
+|---|---|
+| `npm run dev` (développement) | ✅ oui |
+| `npm run build` + `npm start` / Vercel (production) | ❌ **non** |
+
+Aucune variable n'est donc à définir sur Vercel : le bloc disparaît automatiquement en production.
+Pour forcer le comportement :
+
+```bash
+NEXT_PUBLIC_DEMO_MODE=1   # toujours afficher
+NEXT_PUBLIC_DEMO_MODE=0   # toujours masquer
+```
+
+(voir `.env.example`). Le bloc est retiré du DOM, pas seulement masqué en CSS — les identifiants
+n'apparaissent donc pas dans le code source de la page.
+
+Pour la version autonome : `node scripts/gen-standalone.mjs --no-demo`.
+
 ## Version autonome (`standalone/index.html`)
 
 Le fichier unique `standalone/index.html` est **généré depuis les mêmes sources** que

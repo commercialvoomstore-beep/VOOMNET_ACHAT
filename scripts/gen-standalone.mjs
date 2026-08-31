@@ -15,7 +15,15 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const read = (f) => fs.readFileSync(path.join(root, f), "utf8");
 
 const css = read("app/globals.css").trim();
-const shell = read("scripts/shell.html").trim();
+let shell = read("scripts/shell.html").trim();
+
+/* --no-demo : retire le bloc « Comptes de démonstration » du fichier autonome
+   (utile pour publier l'index.html sans exposer les identifiants). */
+const noDemo = process.argv.includes("--no-demo") || process.env.DEMO_MODE === "0";
+if (noDemo) {
+  shell = shell.replace(/<div class="demo-box">[\s\S]*?\n<\/div>\n/, "");
+  if (/demo-box/.test(shell)) throw new Error("Impossible de retirer le bloc de démonstration");
+}
 
 /* --- moteur : on retire l'enveloppe « module ES » ajoutée pour Next.js --- */
 let js = read("lib/voomnet.js");
@@ -64,4 +72,5 @@ for (const f of ["modele_fournisseurs_voomnet.csv", "modele_fournisseurs_voomnet
 }
 
 console.log(`✔ standalone/index.html généré (${(html.length / 1024).toFixed(0)} Ko)`);
+console.log(noDemo ? "✔ bloc « Comptes de démonstration » retiré (--no-demo)" : "✔ bloc « Comptes de démonstration » conservé");
 console.log("✔ modèles CSV/JSON copiés dans standalone/");
