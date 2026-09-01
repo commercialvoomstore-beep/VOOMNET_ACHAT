@@ -1,9 +1,9 @@
-# VOOMNET TECHNOLOGY — Gestion des Achats (version Next.js)
+# VOOMNET TECHNOLOGY — Gestion des Achats
 
-Portage **à l'identique** de l'application `index.html` (démonstration 100 % front-end)
-vers **Next.js 15 (App Router)**. Aucune configuration, aucune règle de gestion et
-aucune fonctionnalité n'a été modifiée : mêmes écrans, mêmes données, mêmes comptes,
-même clé de stockage (`voomnet_achats_v3`).
+Application web de gestion des achats (Next.js 15) : demandes, consultation et comparaison
+des fournisseurs, validation, bons de commande, réceptions, alertes et rapports.
+
+**En ligne :** https://voomnetachat.vercel.app · **Données :** Supabase (temps réel)
 
 ---
 
@@ -11,142 +11,137 @@ même clé de stockage (`voomnet_achats_v3`).
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000
+npm run dev       # http://localhost:3000
+npm test          # 181 contrôles automatisés
+npm run build     # compilation de production
 ```
 
-Autres commandes :
+Comptes de démonstration : `admin / admin123` · `demandeur / demo123` · `responsable / demo123`
+
+---
+
+## Processus d'achat — assistant en 6 étapes
+
+| Étape | Contenu | Caractère |
+|---|---|---|
+| **1. Informations** | articles, quantités, coût présumé (somme globale calculée), motif | le **coût présumé est facultatif** |
+| **2. Fournisseurs** | sélection avec coordonnées (WhatsApp, site, références) | **facultatif** (3 consultations recommandées) |
+| **3. Prix négociés** | grille article × fournisseur, remise, TVA, frais de livraison | **facultatif** |
+| **4. Comparaison** | tableau croisé automatique, meilleurs prix surlignés | **facultative** |
+| **5. Choix** | fournisseur retenu + justification | **facultatif** |
+| **6. Récapitulatif** | récapitulatif complet, impression, soumission | — |
+
+Une demande peut donc être créée, imprimée et soumise **sans aucun prix ni fournisseur**.
+
+### Comparaison des prix (étape 3)
+
+- **Coût total rendu** : total articles − remise + TVA + frais de livraison
+- **Score multicritère /100** : prix · délai · garantie · conditions de paiement (pondération réglable)
+- **Classement** des fournisseurs, meilleur prix par article surligné en vert
+- **Seuil d'offres complètes** : `0` = prix facultatifs (défaut), sinon 1 à 10
+- Outils : pré-remplissage avec le coût présumé, recopie par ligne, export Excel/CSV de la grille
+
+---
+
+## Alertes, sons et notifications
+
+### Relances automatiques
+| Situation | Destinataire |
+|---|---|
+| Demande non validée | tous les responsables actifs |
+| Commande non réceptionnée / réception partielle | le demandeur concerné (+ admins si urgence) |
+
+Deux seuils réglables : **alerte** (🟠) puis **urgence** (🔴). Une même relance n'est envoyée
+qu'une fois par jour et par personne.
+
+### Trois canaux d'alerte simultanés
+1. **🔊 Son de l'application** — mélodies générées par le navigateur :
+   🔵 info (1 note) · 🟠 alerte (2 notes) · 🔴 urgence (3 notes aiguës)
+2. **🔔 Notification du navigateur** (bulle Windows/Mac) — fonctionne **même onglet en arrière-plan**
+3. **👁️ Alerte visuelle** — le titre de l'onglet clignote `🔴 N ALERTES` et la pastille de la cloche pulse
+
+### Alarme répétée
+Tant qu'il reste des notifications non lues, la mélodie est **rejouée toutes les 15 s**.
+Elle s'arrête dès la lecture (avec un bip d'acquittement), via le bouton 🔇, ou après 10 répétitions.
+
+### Réglages (⚙️ Paramètres)
+Sons activés/coupés (bouton 🔊 dans la barre du haut) · volume (faible/moyen/fort) ·
+alarme répétée (activée, intervalle, nombre max, niveaux concernés) · notifications du navigateur ·
+seuils de relance · pondération du score · TVA · seuil d'offres complètes.
+
+---
+
+## Suppressions (administrateur)
+
+🗑️ sur les demandes, utilisateurs, commandes et réceptions, avec confirmation :
+
+- **Demande** → supprime aussi ses commandes, réceptions et notifications
+- **Commande** → la demande redevient « APPROUVÉE »
+- **Réception** → la commande redevient « à réceptionner »
+- **Utilisateur** → refusé s'il est rattaché à des demandes (le désactiver plutôt)
+
+Chaque suppression est tracée dans l'historique.
+
+---
+
+## Impression et exports
+
+| Document | Contenu |
+|---|---|
+| **Fiche de demande** | logo, articles, quantités, **colonnes de prix vides** à compléter à la main, signatures |
+| **Bon de commande** | logo, fournisseur, lignes, montant (imprimable même sans prix ni fournisseur) |
+| **PDF** | demandes, commandes, réceptions (jsPDF) |
+| **Excel / CSV** | demandes, commandes, réceptions, fournisseurs, grille de comparaison |
+
+---
+
+## Supabase
+
+Les données sont **partagées en temps réel** entre tous les postes.
+
+- **Schéma** : `supabase/schema.sql` (7 tables + RLS + temps réel)
+- **Configuration** : `.env.local`
+  ```
+  NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+  NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci…      (clé « anon » uniquement)
+  ```
+- **Sans ces variables**, l'application fonctionne en mode local (localStorage) — aucun plantage
+- **Règle de sécurité** : le serveur fait foi au démarrage ; un nouvel appareil **adopte** les données
+  au lieu de les écraser
+- **Synchronisé** : compteurs ACH/BC, seuil des prix, TVA, pondération, **seuils de relance**
+  (ces derniers voyagent dans la colonne JSONB `poids`, **sans colonne SQL supplémentaire**)
+- **Local à chaque navigateur** (volontairement) : sons, volume, alarme — chaque utilisateur choisit
+
+⚠️ Les seuils de relance modifiés sur un poste sont repris par les autres à leur **prochain rechargement**.
+
+---
+
+## Tests
 
 ```bash
-npm run build    # build de production
-npm start        # serveur de production
-npm run lint     # ESLint
+npm test
 ```
 
-Aucun serveur, aucune base de données externe n'est nécessaire : toutes les données
-sont conservées dans le `localStorage` du navigateur.
+12 séries, **181 contrôles** (jsdom + faux client Supabase) :
+
+| Série | Contrôles | Objet |
+|---|---|---|
+| `step3` | 45 | comparaison des prix, coût rendu, score, seuils |
+| `optional` | 29 | étapes facultatives, impression sans prix |
+| `admin` | 29 | suppressions, exports PDF |
+| `alertes` | 20 | relances, cloche, bandeau |
+| `sons` | 13 | mélodies, bouton 🔊, préférences |
+| `alarme` | 7 | alarme répétée, arrêt à la lecture |
+| `audio-secours` | 7 | son de secours si Web Audio bloqué |
+| `seuils-sync` | 8 | synchronisation des seuils |
+| `alerte-visuelle` | 6 | titre clignotant, pastille |
+| `supabase-live` | 6 | hydratation depuis le serveur (réseau) |
+| `standalone` | 7 | version autonome |
+| `no-overwrite` | 4 | non-écrasement par un nouvel appareil (réseau) |
 
 ---
-
-## Comptes de démonstration
-
-| Rôle           | Identifiant | Mot de passe |
-|----------------|-------------|--------------|
-| Administrateur | `admin`     | `admin123`   |
-| Demandeur      | `demandeur` | `demo123`    |
-| Responsable    | `responsable` | `demo123`  |
-
----
-
-## Correspondance avec la version `index.html`
-
-| Version d'origine (`index.html`) | Version Next.js |
-|----------------------------------|-----------------|
-| `<style>` (lignes 10 à 286)      | `app/globals.css` (copie stricte) |
-| `<script>` (lignes 356 à 2116)   | `lib/voomnet.js` — moteur applicatif, **code repris à l'identique**, encapsulé dans `initVoomnet()` |
-| Balisage de l'écran de connexion | `components/LoginScreen.tsx` |
-| Structure de l'application (sidebar, topbar) | `components/AppShell.tsx` |
-| Amorçage (chargement SheetJS + moteur) | `components/VoomnetApp.tsx` (composant client) |
-| Page d'accueil                   | `app/page.tsx` |
-| `<title>` / `<html lang="fr">`   | `app/layout.tsx` (métadonnées Next.js) |
-| Script CDN SheetJS (`xlsx@0.18.5`) | chargé dynamiquement par `components/VoomnetApp.tsx` **avant** l'initialisation du moteur (même URL, même version) |
-| `modele_fournisseurs_voomnet.csv` / `.json` | `public/` |
-
-Les écrans (tableaux de bord, demandes, assistant 5 étapes, fournisseurs,
-commandes, réceptions, rapports, paramètres) restent produits par le moteur
-dans `#page-content`, `#modal-root` et `#toast-root` : le rendu HTML est
-strictement le même que dans la version d'origine.
-
----
-
-## Processus applicatif (inchangé)
-
-1. Le **demandeur** crée une demande (articles, quantités, coût présumé → somme globale calculée).
-2. Il sélectionne **au moins 3 fournisseurs** (emplacement, WhatsApp `wa.me`, site internet, références).
-3. Il les contacte puis saisit les prix reçus : 💰 prix le plus bas, 🚚 livraison la plus rapide,
-   🛡️ meilleure garantie sont mis en évidence automatiquement.
-4. Il choisit le fournisseur retenu + justification, puis soumet la demande.
-5. Le **responsable** approuve / refuse / demande une modification.
-6. Création du bon de commande `BC-AAAA-NNNNN` (impression possible), puis réception complète ou partielle.
-7. La demande passe en **✓ CLÔTURÉE** (timeline complète visible).
-
-### Rôles et droits
-
-* **Administrateur** : tous les droits — fournisseurs (ajout / modification / désactivation / suppression),
-  import-export Excel·CSV·JSON, utilisateurs, toutes les demandes, commandes, réceptions, rapports, paramètres.
-* **Demandeur** : crée et suit ses demandes, catalogue fournisseurs, comparaison des offres,
-  ses commandes et réceptions.
-* **Responsable** : valide les demandes soumises et consulte l'historique de ses validations.
-
----
-
-## Import / Export des fournisseurs (menu 🏢 Fournisseurs, admin)
-
-* **Import** : bouton « 📥📤 Importer / Exporter » → `.xlsx`, `.xls`, `.csv` ou `.json`
-  → aperçu et contrôle (« X fournisseurs détectés », lignes invalides signalées sans bloquer les valides)
-  → « ✓ Importer les fournisseurs ».
-* **Export** : Excel (`.xlsx`), JSON, CSV (secours).
-* **Modèles** : téléchargeables depuis l'application (également fournis dans `public/`).
-
-Champs : `FOURNISSEUR NOM · RÉFÉRENCES · EMPLACEMENT · WHATSAPP · SITE INTERNET` (+ `STATUT`).
-
----
-
-## Améliorations apportées à l'étape 3 (comparaison des prix)
-
-L'étape **3. PRIX NÉGOCIÉS** a été enrichie — c'est désormais le poste de commandement
-de la comparaison (les mêmes blocs sont repris en lecture seule à l'étape 4, à l'étape 6
-et dans le détail de la demande).
-
-### 1. Saisie assistée
-
-| Outil | Effet |
-|---|---|
-| **📋 Pré-remplir (coût présumé)** | remplit d'un clic toutes les cases vides avec le coût présumé de chaque article |
-| **⇉ Recopier par ligne** | recopie le premier prix saisi de chaque article sur tous les fournisseurs |
-| **⧉ Recopier** (par ligne d'article) | recopie le prix d'une ligne sur un seul article |
-| **🧹 Effacer les prix** | remet la grille à zéro (délais, garanties et conditions conservés) |
-| **📊 Exporter la comparaison** | exporte la grille en Excel (2 onglets : « Comparaison articles » et « Synthèse offres »), ou en CSV si SheetJS est indisponible |
-
-* Compteur de saisie **« X / Y prix saisis »** avec barre de progression.
-* Le **meilleur prix de chaque article** est surligné en vert **en direct**, dès la saisie.
-* Chaque cellule affiche le total de la ligne (`prix × quantité`) et l'**écart en %** par rapport au coût présumé.
-
-### 2. Comparaison enrichie — le coût total rendu
-
-Chaque offre est décomposée, fournisseur par fournisseur :
-
-`TOTAL ARTICLES (brut)` → `− Remise (%)` → `NET HT` → `+ TVA (%)` → `+ Frais de livraison` → **⭐ COÛT TOTAL RENDU**
-
-* La **remise** (%) et les **frais de livraison** (FCFA) sont saisis dans la grille.
-* La **TVA** est un réglage global (⚙️ Paramètres → « Comparaison des prix »), à **0 % par défaut**
-  pour ne modifier aucun montant existant.
-* L'écart par rapport à la somme présumée est affiché en FCFA **et en %**.
-* Les fournisseurs sont **classés** par coût total rendu (`1️⃣ 2️⃣ 3️⃣…`).
-
-### 3. Score multicritère et recommandation
-
-Chaque offre complète reçoit une **note sur 100** : moyenne pondérée de quatre notes
-(prix : le moins cher = 100 ; délai : le plus rapide = 100 ; garantie : la plus longue = 100 ;
-paiement : `30 + jours de délai`, « Comptant » = 30).
-
-* Pondération par défaut : **prix 50 % · délai 20 % · garantie 20 % · paiement 10 %**,
-  réglable directement dans l'étape 3 (bloc « ⚙️ Pondération ») et dans ⚙️ Paramètres.
-* Bannière **🏆 Meilleure offre globale** (étapes 3 et 4) et bouton
-  **⭐ Retenir le mieux noté** (étape 5).
-* Chip **⭐ Meilleur score** sur la colonne du fournisseur le mieux noté.
-
-### 4. Seuil d'offres complètes (paramétrable)
-
-* Une offre n'est **complète** que si chaque article a un prix négocié > 0.
-* Le passage à l'étape 4 exige **au moins 3 offres complètes** (seuil réglable de 1 à 10
-  dans ⚙️ Paramètres → « Nombre minimum d'offres complètes »).
-* Les fournisseurs sans réponse complète sont marqués **⚠️ SANS RÉPONSE**, affichés en
-  « NON RENSEIGNÉ » et **exclus** du meilleur prix, du meilleur total, du classement et du score.
-  Un message le rappelle lors du passage à l'étape suivante.
 
 ## Chaîne de publication (centre de commandement)
-
-Toute modification est faite ici, puis livrée automatiquement :
 
 ```
    modifications du code
@@ -154,6 +149,7 @@ Toute modification est faite ici, puis livrée automatiquement :
             ▼
    node scripts/publish.mjs "message"     ← une seule commande
             │
+            ├─0. installe les dépendances si besoin
             ├─1. régénère standalone/index.html
             ├─2. npm run build  (TypeScript + ESLint)
             ├─3. git commit
@@ -164,148 +160,38 @@ Toute modification est faite ici, puis livrée automatiquement :
    GitHub  ──(auto)──►  Vercel  ──►  https://voomnetachat.vercel.app
 ```
 
-Exemples :
+Le numéro de commit déployé est visible dans le code source de la page :
+`<meta name="voomnet-build" content="154b097">`.
 
-```bash
-node scripts/publish.mjs "Ajout du rapport mensuel"
-node scripts/publish.mjs "Correction d'un bug d'affichage" --no-build
-```
-
-Ce qui reste à faire de votre côté (une seule fois) : les **variables d'environnement Vercel**
-et l'exécution du **SQL Supabase** — ces deux consoles ne sont pas accessibles de l'extérieur.
-
-## Connexion à Supabase (optionnelle mais recommandée en équipe)
-
-Sans configuration, l'application fonctionne en **mode démonstration locale** (localStorage).
-Avec Supabase, **tous les postes partagent les mêmes données**, en temps réel.
-
-### 1. Créer les tables
-
-Ouvrez **Supabase → SQL Editor → New query**, collez le contenu de
-**`supabase/schema.sql`** et exécutez. Il crée 7 tables
-(`users`, `suppliers`, `requests`, `orders`, `receptions`, `notifications`, `meta`),
-les index, les politiques RLS et l'abonnement temps réel.
-
-### 2. Renseigner les clés
-
-```bash
-cp .env.example .env.local
-# puis :
-NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...      # clé « anon public » uniquement
-```
-
-Sur **Vercel** : *Settings → Environment Variables* → ajoutez les deux variables → **Redeploy**.
-
-### 3. C'est tout
-
-Pour vérifier la connexion : **⚙️ Paramètres → « Base de données »** affiche
-« ☁️ Connecté à Supabase (projet.supabase.co) — dernière synchro hh:mm »
-ou « 💻 Mode local — localStorage uniquement (Supabase non configuré) ».
-C'est le moyen le plus rapide de contrôler un déploiement Vercel.
-
-Au premier démarrage, l'application pousse son jeu de démonstration vers Supabase
-(5 utilisateurs, 10 fournisseurs, 5 demandes, 2 commandes, 2 réceptions).
-
-### Comment ça marche
-
-```
-Écrans ──► DB (mémoire) ──► saveDB() ──► localStorage (immédiat)
-                                    └──► Supabase (synchro différée 400 ms)
-loadDB() ◄── cache local (affichage instantané) puis hydratation Supabase
-```
-
-* **Aucune règle de gestion n'a changé** : `DB` reste l'objet utilisé par tous les écrans.
-* **Synchro différentielle** : seules les lignes ajoutées / modifiées / supprimées sont envoyées.
-* **Temps réel** : un autre poste modifie une donnée → vos écrans se rafraîchissent
-  (jamais pendant la saisie d'un assistant ou l'ouverture d'une modale).
-* **Repli automatique** : Supabase absent ou injoignable → fonctionnement local + message.
-* **Réinitialisation** (⚙️ Paramètres) écrase aussi les données distantes.
-
-Authentification : le mode « identifiant + mot de passe » de la démonstration est conservé
-(les utilisateurs sont synchronisés dans la table `users`). Pour passer sur **Supabase Auth**,
-voir les commentaires en fin de `supabase/schema.sql`.
-
-Version autonome : `node scripts/gen-standalone.mjs --supabase-url=… --supabase-key=…`
-
-## Suppressions réservées à l'administrateur
-
-Une icône **🗑️** apparaît pour l'administrateur (et uniquement pour lui) sur chaque écran concerné.
-Toute suppression demande une **confirmation** et applique les règles suivantes :
-
-| Élément | Effet de la suppression |
-|---|---|
-| **Demande** | supprime la demande **et** ses commandes et réceptions liées, ainsi que les notifications associées |
-| **Commande** | supprime la commande **et** sa réception ; la demande redevient **APPROUVÉE** (une nouvelle commande peut être créée) |
-| **Réception** | supprime la réception ; la commande redevient **à réceptionner** (la demande repasse « COMMANDE PASSÉE ») |
-| **Utilisateur** | refusée si l'utilisateur est rattaché à des demandes (→ le désactiver) ou s'il s'agit de son propre compte |
-
-Chaque suppression est tracée dans l'historique de la demande concernée.
-
-## Exports
-
-| Écran | Excel | PDF | CSV (secours) |
-|---|---|---|---|
-| Demandes | 📊 Exporter Excel | 📄 PDF | ✔ |
-| Commandes | 📊 Exporter Excel | 📄 PDF | ✔ |
-| Réceptions | 📊 Exporter Excel | 📄 PDF | ✔ |
-| Fournisseurs | 📊 Excel / 🧾 JSON / 📄 CSV | — | ✔ |
-| Comparaison (étape 3) | 📊 Exporter la comparaison (2 onglets) | — | ✔ |
-
-Les exports PDF sont générés côté navigateur avec **jsPDF + AutoTable** (chargés à la demande depuis le CDN) :
-en-tête VOOMNET, date et auteur, tableau paginé, pied de page « Page x / y ».
-**Si le CDN est indisponible, l'export bascule automatiquement sur l'impression** (fenêtre d'impression →
-« Enregistrer au format PDF ») : aucune fonctionnalité n'est perdue hors-ligne.
-
-Les exports respectent les droits : un demandeur n'exporte que ses propres données.
-
-## Masquer les comptes de démonstration (déploiement public / Vercel)
-
-Par défaut, le bloc **« Comptes de démonstration »** de l'écran de connexion est :
-
-| Environnement | Affiché ? |
-|---|---|
-| `npm run dev` (développement) | ✅ oui |
-| `npm run build` + `npm start` / Vercel (production) | ❌ **non** |
-
-Aucune variable n'est donc à définir sur Vercel : le bloc disparaît automatiquement en production.
-Pour forcer le comportement :
-
-```bash
-NEXT_PUBLIC_DEMO_MODE=1   # toujours afficher
-NEXT_PUBLIC_DEMO_MODE=0   # toujours masquer
-```
-
-(voir `.env.example`). Le bloc est retiré du DOM, pas seulement masqué en CSS — les identifiants
-n'apparaissent donc pas dans le code source de la page.
-
-Pour la version autonome : `node scripts/gen-standalone.mjs --no-demo`.
-
-## Version autonome (`standalone/index.html`)
-
-Le fichier unique `standalone/index.html` est **généré depuis les mêmes sources** que
-l'application Next.js (même CSS, même moteur) :
-
-```bash
-node scripts/gen-standalone.mjs
-```
-
-Il produit `standalone/index.html` + les modèles CSV/JSON + le `LISEZMOI.txt`.
-Ouvrez-le directement dans un navigateur : aucune installation requise.
-
-## Stockage des données
-
-Toutes les données sont conservées dans le `localStorage` du navigateur
-(clé `voomnet_achats_v3`, session : `voomnet_session_v1`). Elles persistent entre les
-sessions sur le même poste / navigateur et ne sont pas partagées entre plusieurs postes.
-
-Réinitialisation : **admin → ⚙️ Paramètres → « Réinitialiser les données de démonstration »**
-(recrée 5 utilisateurs, 10 fournisseurs, 5 demandes, 2 commandes, 2 réceptions).
+Reste à faire de votre côté (une seule fois) : les **variables d'environnement Vercel** et
+l'exécution initiale du **schéma SQL Supabase**.
 
 ---
 
-## Évolution vers un vrai backend
+## Version autonome
 
-Toutes les lectures/écritures passent par une couche unique (`loadDB` / `saveDB`,
-section 2 de `lib/voomnet.js`). Pour brancher une API REST, il suffit de remplacer
-cette couche par des appels `fetch()` : le reste de l'application ne change pas.
+`standalone/index.html` (un seul fichier, fonctionne hors ligne) :
+
+```bash
+node scripts/gen-standalone.mjs
+# avec Supabase :
+node scripts/gen-standalone.mjs --supabase-url=… --supabase-key=…
+```
+
+Le logo y est intégré en base64 ; sans clés, il fonctionne en mode local.
+
+---
+
+## Architecture
+
+| Fichier | Rôle |
+|---|---|
+| `lib/voomnet.js` | moteur applicatif (données, règles de gestion, écrans) |
+| `lib/supabaseSync.js` | synchronisation Supabase (différentielle, temps réel) |
+| `components/` | coquille React (connexion, barre latérale, amorçage) |
+| `app/globals.css` | thème violet `#500070` / bleu nuit `#000060` |
+| `scripts/` | publication, génération de la version autonome |
+| `supabase/schema.sql` | schéma de la base |
+
+Toutes les lectures/écritures passent par `loadDB` / `saveDB` : pour brancher une autre API,
+il suffit de remplacer cette couche.

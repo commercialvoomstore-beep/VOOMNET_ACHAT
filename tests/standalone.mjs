@@ -1,0 +1,40 @@
+import fs from "node:fs";
+import path from "node:path";
+import { chargerJsPdf, root } from "./page.mjs";
+import { JSDOM } from "jsdom";
+const dom = new JSDOM(fs.readFileSync(path.join(root, "standalone", "index.html"), "utf8"), {
+  url: "http://localhost/", runScripts: "dangerously", pretendToBeVisual: true,
+});
+const w = dom.window; w.scrollTo = () => {};
+const $ = (s) => w.document.querySelector(s);
+const $$ = (s) => [...w.document.querySelectorAll(s)];
+const click = (el) => el && el.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+const input = (el, v) => { el.value = String(v); el.dispatchEvent(new w.Event("input", { bubbles: true })); };
+const t = [];
+const check = (l, c, x = "") => t.push(`${c ? "✅" : "⛔"} ${l}${x ? " — " + x : ""}`);
+
+$("#login-id").value = "admin"; $("#login-pw").value = "admin123";
+$("#login-form").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
+check("Connexion admin (standalone)", !$("#app").classList.contains("hidden"));
+const nav = (p) => click($$("#sidebar-nav .nav-item").find((b) => b.dataset.page === p));
+nav("nouvelleDemande");
+click($('[data-act="add-article"]'));
+let a = $$(".art input[data-ai]");
+input(a[0], "Écran TV 55"); input(a[1], "4"); input(a[2], "450000");
+click($('[data-act="wiz-next"]'));
+const boxes = $$("input[data-sid]");
+[0,1,2].forEach(i => { boxes[i].checked = true; boxes[i].dispatchEvent(new w.Event("change", { bubbles: true })); });
+click($('[data-act="wiz-next"]'));
+check("Étape 3 : barre d'outils", !!$(".nego-toolbar"));
+click($('[data-act="nego-prefill"]'));
+check("Pré-remplissage 4 / 4 ? (1 article × 3 fournisseurs)", /3 \/ 3/.test($("[data-nego-count]").textContent), $("[data-nego-count]").textContent);
+check("Coût total rendu présent", $("#page-content").textContent.includes("COÛT TOTAL RENDU"));
+check("Score global présent", $("#page-content").textContent.includes("SCORE GLOBAL"));
+click($('[data-act="wiz-next"]'));
+check("Passage à l'étape 4", $("#page-content").textContent.includes("Surligné en vert"));
+check("Clé de stockage v4", !!w.localStorage.getItem("voomnet_achats_v4"));
+const okN = t.filter((x) => x.startsWith("✅")).length;
+const koN = t.length - okN;
+console.log(t.join("\n"));
+console.log(`\n${okN} OK / ${koN} ÉCHEC${koN ? "" : "  🎉 Version autonome OK"}`);
+process.exit(koN ? 1 : 0);
