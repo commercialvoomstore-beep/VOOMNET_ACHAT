@@ -71,6 +71,19 @@ seuils de relance · pondération du score · TVA · seuil d'offres complètes.
 
 ---
 
+## Tableau de bord graphique
+
+Graphiques générés en **SVG pur** (aucune bibliothèque) :
+
+- **📈 Achats confirmés — 12 derniers mois** (histogramme, montants par mois)
+- **🍩 Répartition des demandes par statut** (anneau avec légende et pourcentages)
+- **🏅 Top 5 fournisseurs** (histogramme des montants commandés)
+- les mêmes graphiques sur la page **Rapports**, avec l'évolution mensuelle
+
+Chaque barre/segment affiche une infobulle au survol (libellé + montant).
+
+---
+
 ## Suppressions (administrateur)
 
 🗑️ sur les demandes, utilisateurs, commandes et réceptions, avec confirmation :
@@ -122,7 +135,7 @@ Les données sont **partagées en temps réel** entre tous les postes.
 npm test
 ```
 
-12 séries, **181 contrôles** (jsdom + faux client Supabase) :
+13 séries, **197 contrôles** (jsdom + faux client Supabase) :
 
 | Série | Contrôles | Objet |
 |---|---|---|
@@ -137,6 +150,7 @@ npm test
 | `alerte-visuelle` | 6 | titre clignotant, pastille |
 | `supabase-live` | 6 | hydratation depuis le serveur (réseau) |
 | `standalone` | 7 | version autonome |
+| `graphiques` | 16 | graphiques du tableau de bord et des rapports |
 | `no-overwrite` | 4 | non-écrasement par un nouvel appareil (réseau) |
 
 ---

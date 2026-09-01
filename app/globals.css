@@ -340,3 +340,24 @@ table.cmp{border-collapse:collapse;min-width:560px;width:100%}
 
 /* --- Alerte visuelle : la pastille de la cloche pulse s'il reste des alertes non lues --- */
 .bell-badge.alarme{animation:pulse-son 1.1s infinite}
+
+/* ============================= GRAPHIQUES ============================= */
+.graph{position:relative}
+.graph svg{width:100%;height:calc(100% - 20px);display:block;overflow:visible}
+.graph svg rect{transition:opacity .15s}
+.graph svg rect:hover{opacity:.78}
+.graph-labels{display:flex;margin-top:4px}
+.graph-labels span{flex:1;text-align:center;font-size:10px;color:var(--muted);font-weight:700;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.anneau-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.anneau{width:132px;height:132px;flex-shrink:0}
+.anneau circle{transition:opacity .15s}
+.anneau circle:hover{opacity:.82}
+.anneau-total{font-size:19px;font-weight:800;fill:#0f172a}
+.anneau-legende{font-size:8px;fill:#64748b;font-weight:700}
+.legende{list-style:none;flex:1;min-width:170px;margin:0}
+.legende li{display:flex;align-items:center;gap:8px;font-size:12px;padding:3px 0}
+.legende i{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+.legende span{flex:1;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legende b{font-weight:800}
+@media(max-width:560px){.anneou,.anneau{width:110px;height:110px}}
