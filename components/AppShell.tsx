@@ -32,6 +32,9 @@ export default function AppShell() {
           </button>
           <h1 id="page-title">Tableau de bord</h1>
           <div className="bell-wrap">
+            <button className="icon-btn" id="btn-son" data-act="toggle-son" title="Sons de notification">
+              🔊
+            </button>
             <button className="icon-btn" data-act="notif-toggle" title="Notifications">
               🔔<span className="bell-badge" id="bell-badge" style={{ display: "none" }}>0</span>
             </button>

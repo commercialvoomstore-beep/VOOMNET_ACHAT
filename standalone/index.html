@@ -101,7 +101,7 @@ input,select,textarea{font:inherit;color:inherit}
 #topbar{position:sticky;top:0;background:rgba(255,255,255,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:13px;padding:11px 22px;z-index:40}
 #topbar h1{font-size:18px;font-weight:800}
 #hamburger{display:none;background:#fff;border:1.5px solid var(--border);border-radius:10px;width:38px;height:38px;font-size:17px;align-items:center;justify-content:center}
-.bell-wrap{position:relative;margin-left:auto}
+.bell-wrap{position:relative;margin-left:auto;display:flex;align-items:center;gap:8px}
 .icon-btn{background:#fff;border:1.5px solid var(--border);border-radius:10px;width:38px;height:38px;font-size:17px;display:flex;align-items:center;justify-content:center;position:relative}
 .icon-btn:hover{border-color:var(--primary)}
 .bell-badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border-radius:99px;min-width:18px;height:18px;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px}
@@ -392,6 +392,7 @@ table.cmp{border-collapse:collapse;min-width:560px;width:100%}
       <button id="hamburger" data-act="toggle-sidebar">☰</button>
       <h1 id="page-title">Tableau de bord</h1>
       <div class="bell-wrap">
+        <button class="icon-btn" id="btn-son" data-act="toggle-son" title="Sons de notification">🔊</button>
         <button class="icon-btn" data-act="notif-toggle" title="Notifications">🔔<span class="bell-badge" id="bell-badge" style="display:none">0</span></button>
         <div class="notif-panel hidden" id="notif-panel"></div>
       </div>
@@ -920,6 +921,7 @@ function showApp(){
   $('#tu-avatar').textContent = initials(sessionUser.nom);
   $('#tu-name').textContent = sessionUser.nom;
   $('#tu-role').textContent = ROLE_LABELS[sessionUser.role];
+  debloquerAudio();          // le clic de connexion débloque l'audio du navigateur
   genererRappels();          // relances au moment de la connexion
   autoriserSons();           // les sons ne se déclenchent qu'après l'ouverture de session
   /* petit résumé sonore si des alertes sont en cours (uniquement pour l'utilisateur
@@ -999,6 +1001,7 @@ function render(){
     storage.setItem(DB_KEY, JSON.stringify(DB));
   }
   $('#notif-panel').classList.add('hidden');
+  majBoutonSon();
   buildSidebar();
   updateBell();
   const c = $('#page-content');
@@ -1578,6 +1581,11 @@ function confirmModal(text, onYes, yesLabel){
 
 /* ---- Toasts ---- */
 function toast(msg, type){
+  /* petit signal sonore pour les messages importants (erreur / avertissement) */
+  if (sonPret && sessionUser && sonActif()){
+    if (type === 'err') jouerSonNotif('urgent');
+    else if (type === 'warn') jouerSonNotif('alerte');
+  }
   const d = document.createElement('div');
   d.className = 'toast ' + (type || '');
   d.innerHTML = (type === 'ok' ? '✅ ' : type === 'err' ? '⛔ ' : type === 'warn' ? '⚠️ ' : 'ℹ️ ') + esc(msg);
@@ -1609,6 +1617,36 @@ const sonActif = () => storage.getItem(SON_CLE) !== '0';          // actif par d
 function setSonActif(on){ storage.setItem(SON_CLE, on ? '1' : '0'); }
 let sonPret = false;                                              // évite les bips au démarrage
 function autoriserSons(){ setTimeout(() => { sonPret = true; }, 2500); }
+
+/* Les navigateurs bloquent l'audio tant qu'aucune interaction n'a eu lieu :
+   on crée / réactive le contexte audio dès le premier clic ou appui sur une touche. */
+function debloquerAudio(){
+  try {
+    const Ctx = (typeof window !== 'undefined') && (window.AudioContext || window.webkitAudioContext);
+    if (!Ctx) return false;
+    if (!audioCtx) audioCtx = new Ctx();
+    if (audioCtx.state !== 'running' && audioCtx.resume) audioCtx.resume();
+    return audioCtx.state === 'running';
+  } catch(e){ return false; }
+}
+function installerDeblocageAudio(){
+  const unlock = () => {
+    debloquerAudio();
+    document.removeEventListener('pointerdown', unlock, true);
+    document.removeEventListener('keydown', unlock, true);
+    document.removeEventListener('touchstart', unlock, true);
+  };
+  document.addEventListener('pointerdown', unlock, true);
+  document.addEventListener('keydown', unlock, true);
+  document.addEventListener('touchstart', unlock, true);
+}
+
+/* Bouton 🔊 / 🔇 de la barre du haut */
+function majBoutonSon(){
+  const b = $('#btn-son'); if (!b) return;
+  b.textContent = sonActif() ? '🔊' : '🔇';
+  b.title = sonActif() ? 'Sons activés — cliquer pour couper' : 'Sons coupés — cliquer pour activer';
+}
 
 function bipe(freq, decalage, duree, volume){
   try {
@@ -3522,6 +3560,20 @@ document.addEventListener('click', e => {
     }
     /* --- Paramètres --- */
     case 'test-son':        testerSons(); break;
+    case 'toggle-son': {
+      const activer = !sonActif();
+      setSonActif(activer);
+      if (activer){
+        const okAudio = debloquerAudio();
+        sonPret = true;
+        jouerSonNotif('info', true);      // bip de confirmation immédiat
+        toast(okAudio ? 'Sons activés 🔊' : 'Sons activés — cliquez à nouveau sur 🔊 si vous n\'entendez rien', 'ok');
+      } else {
+        toast('Sons désactivés 🔇', 'ok');
+      }
+      majBoutonSon();
+      break;
+    }
     case 'reset-demo': confirmModal('⚠️ Cette action va <b>supprimer toutes les données locales</b> (fournisseurs importés, demandes, commandes…) et recréer le jeu de démonstration. Continuer ?', resetDemo, 'Oui, réinitialiser'); break;
   }
 });
@@ -3656,6 +3708,7 @@ function startRealtime(){
   else showLogin();
   hydrateRemote();
   startRealtime();
+  installerDeblocageAudio();  // débloque l'audio dès la première interaction
   genererRappels();          // relances automatiques (une seule fois par jour)
   autoriserSons();           // pas de bip au chargement de la page
 })();
