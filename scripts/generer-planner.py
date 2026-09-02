@@ -11,6 +11,7 @@ import csv
 import os
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.worksheet.table import Table as ExcelTable, TableStyleInfo
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 SORTIE = os.path.join(ICI, "..", "docs", "planner")
@@ -141,6 +142,23 @@ def excel():
             feuille.cell(row=ligne, column=2, value=t[4])
             feuille.cell(row=ligne, column=3, value=t[5])
             ligne += 1
+    # --- feuille technique : vrai tableau Excel nommé (requis par Power Automate) ---
+    tech = wb.create_sheet("Taches")
+    entetes_tech = ["Module", "Tache", "Compartiment", "Avancement", "Echeance", "Priorite", "Responsable", "Notes"]
+    for c, h in enumerate(entetes_tech, 1):
+        cell = tech.cell(row=1, column=c, value=h)
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor=VIOLET)
+    for i, t in enumerate(TACHES, start=2):
+        for c, v in enumerate(t, 1):
+            tech.cell(row=i, column=c, value=v)
+    table = ExcelTable(displayName="TachesVOOMNET",
+                       ref="A1:%s%d" % (chr(ord("A") + len(entetes_tech) - 1), len(TACHES) + 1))
+    table.tableStyleInfo = TableStyleInfo(name="TableStyleMedium12", showRowStripes=True)
+    tech.add_table(table)
+    for c, l in enumerate([16, 58, 15, 13, 12, 10, 13, 46], 1):
+        tech.column_dimensions[tech.cell(row=1, column=c).column_letter].width = l
+
     chemin = os.path.join(SORTIE, "VOOMNET-planner.xlsx")
     wb.save(chemin)
     return chemin
@@ -173,7 +191,66 @@ def textes_a_coller():
     return chemins
 
 
+FICHE = """# FICHE RAPIDE — Votre patron suit l'avancement dans Microsoft Planner
+
+**Durée : 6 minutes.** Aucune installation, aucun droits d'administrateur.
+
+## Les 6 étapes
+
+1. **Ouvrir Planner** : https://planner.cloud.microsoft (compte professionnel Microsoft 365)
+
+2. **Créer le plan** : `Nouveau plan` → nom : `VOOMNET — Gestion des achats` → Créer
+
+3. **Créer 3 compartiments** : `✅ Livré` · `🔄 En cours` · `📅 Planifié`
+
+4. **Coller les tâches livrées** :
+   - cliquer dans `✅ Livré` sur **Ajouter une tâche**
+   - ouvrir `a-coller-LIVRE.txt`, copier les lignes de tâches
+   - coller dans le champ → **chaque ligne devient une tâche** → **Ajouter**
+
+5. **Répéter** avec `a-coller-EN-COURS.txt` puis `a-coller-PLANIFIE.txt`
+
+6. **Inviter votre patron** : bouton **Membres** (en haut à droite du plan) → son adresse e-mail professionnelle
+
+## Ce qu'il verra
+
+- **Graphiques** : répartition des tâches par statut, compartiment et personne
+- **Planning** : le calendrier des échéances
+- **Grille** : le détail (dates, progression, responsables)
+
+## Avancement actuel
+
+| Indicateur | Valeur |
+|---|---|
+| **Avancement global** | **{pct} %** |
+| Tâches livrées / en cours / planifiées | **{liv} / {enc} / {pla}** |
+| Application | déployée et en service |
+| Tests | 197 contrôles au vert |
+
+## Chaque semaine (10 min)
+
+- passer en `✅ Livré` les tâches terminées
+- mettre à jour la progression des tâches `🔄 En cours`
+- ajuster les échéances
+
+---
+
+*Détail complet : `GUIDE-PLANNER.pdf` — 4 méthodes, dont l'automatisation Power Automate.*
+"""
+
+
+def fiche_rapide():
+    chemin = os.path.join(SORTIE, "FICHE-RAPIDE.md")
+    with open(chemin, "w", encoding="utf-8") as f:
+        f.write(FICHE.format(
+            pct=total_avancement(),
+            liv=sum(1 for t in TACHES if t[2] == "Livré"),
+            enc=sum(1 for t in TACHES if t[2] == "En cours"),
+            pla=sum(1 for t in TACHES if t[2] == "Planifié")))
+    return chemin
+
+
 if __name__ == "__main__":
     print("Avancement global : %d %%" % total_avancement())
-    for c in [excel(), csv_file()] + textes_a_coller():
+    for c in [excel(), csv_file(), fiche_rapide()] + textes_a_coller():
         print("✔ %s (%.1f Ko)" % (os.path.basename(c), os.path.getsize(c) / 1024))

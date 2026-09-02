@@ -56,12 +56,14 @@ progression, assigné).
 Pour créer les tâches automatiquement depuis un fichier (et les recréer après chaque
 mise à jour) :
 
-1. Déposer `VOOMNET-planner.csv` (converti en classeur Excel) dans **OneDrive**
-2. Dans le fichier Excel : **Insertion → Tableau** (donner un nom, par exemple `Taches`)
-3. **Power Automate** (https://make.powerautomate.com) → **Créer → Flux de cloud instantané**
-4. Déclencheur : *Déclencher manuellement un flux*
-5. Action **Excel Online — Répertorier les lignes présentes dans un tableau** :
-   - Emplacement : OneDrive · Bibliothèque : OneDrive · Fichier : votre classeur · Tableau : `Taches`
+1. Déposer `VOOMNET-planner.xlsx` dans **OneDrive**
+   👉 *le fichier contient déjà un vrai tableau Excel nommé **`TachesVOOMNET`** (onglet « Taches ») —
+   aucune préparation n'est nécessaire*
+2. **Power Automate** (https://make.powerautomate.com) → **Créer → Flux de cloud instantané**
+3. Déclencheur : *Déclencher manuellement un flux*
+4. Action **Excel Online (Business) — Répertorier les lignes présentes dans un tableau** :
+   - Emplacement : OneDrive · Bibliothèque de documents : OneDrive · Fichier : `VOOMNET-planner.xlsx`
+   - Tableau : **`TachesVOOMNET`** (apparaît directement dans la liste déroulante)
 6. Ajouter **Appliquer à chacun**, puis l'action **Planner — Créer une tâche** :
    - *ID de groupe* : votre groupe Microsoft 365
    - *ID de plan* : le plan VOOMNET
