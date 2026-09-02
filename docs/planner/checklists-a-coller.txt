@@ -1,0 +1,267 @@
+SOUS-ÉTAPES À COLLER DANS LA CHECKLIST DE CHAQUE TÂCHE PLANNER
+Ouvrir la tâche -> Checklist -> coller les 4 lignes -> cocher celles qui sont faites
+
+[Cadrage] Cadrage et analyse des besoins
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Cadrage] Choix de l'architecture (Next.js + Supabase)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Sécurité] Authentification et gestion des 3 rôles
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Demandes] Module demandes d'achat (assistant 6 étapes)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Demandes] Numérotation automatique ACH-AAAA-NNNNN
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Demandes] Rendre le coût présumé facultatif
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Fournisseurs] Catalogue fournisseurs (création, modification, statut)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Fournisseurs] Import des fournisseurs (Excel, CSV, JSON)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Fournisseurs] Export des fournisseurs et modèles de fichiers
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Négociation] Grille de négociation article × fournisseur
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Négociation] Rendre les prix facultatifs (seuil paramétrable)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Négociation] Coût total rendu (remise, TVA, frais de livraison)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Comparaison] Score multicritère /100 et classement
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Comparaison] Tableau croisé et meilleurs prix surlignés
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Validation] Circuit de validation (approuver / refuser / modifier)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Commandes] Bons de commande BC-AAAA-NNNNN et confirmation
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Commandes] Commande et impression sans fournisseur ni prix
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Réceptions] Réceptions complètes et partielles
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Administration] Suppressions (demande, commande, réception, utilisateur)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Alertes] Notifications et relances automatiques
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Alertes] Bandeau d'alertes et pastilles sur le tableau de bord
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Alertes] Sons de notification (3 niveaux) et volume réglable
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Alertes] Alarme répétée jusqu'à lecture du message
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Alertes] Notifications du navigateur (bulles système)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Alertes] Alerte visuelle (onglet clignotant, pastille pulsante)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Documents] Impression fiche de demande et bon de commande
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Documents] Exports PDF (demandes, commandes, réceptions)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Documents] Exports Excel et CSV
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Identité] Intégration du logo et charte violet / bleu nuit
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Données] Synchronisation Supabase en temps réel
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Données] Sécurisation anti-écrasement entre appareils
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Pilotage] Tableau de bord graphique (3 graphiques)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Qualité] Suite de tests automatisés (197 contrôles)
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Déploiement] Déploiement continu GitHub vers Vercel
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Documentation] Cahier des charges et synthèse direction
+  Développement   -> Terminé
+  Test            -> Terminé
+  Pilote          -> Terminé
+  Déploiement     -> Terminé
+
+[Qualité] Recette utilisateur et ajustements
+  Développement   -> Terminé
+  Test            -> En cours
+  Pilote          -> Pas commencé
+  Déploiement     -> Pas commencé
+
+[Sécurité] Durcissement des politiques d'accès (RLS)
+  Développement   -> En cours
+  Test            -> Pas commencé
+  Pilote          -> Pas commencé
+  Déploiement     -> Pas commencé
+
+[Sécurité] Journal d'audit des actions sensibles
+  Développement   -> En cours
+  Test            -> Pas commencé
+  Pilote          -> Pas commencé
+  Déploiement     -> Pas commencé
+
+[Sécurité] Authentification sécurisée (mots de passe hachés)
+  Développement   -> Pas commencé
+  Test            -> Pas commencé
+  Pilote          -> Pas commencé
+  Déploiement     -> Pas commencé
+
+[Alertes] Notifications par e-mail
+  Développement   -> Pas commencé
+  Test            -> Pas commencé
+  Pilote          -> Pas commencé
+  Déploiement     -> Pas commencé
+
+[Pilotage] Budgets par service avec alerte de dépassement
+  Développement   -> Pas commencé
+  Test            -> Pas commencé
+  Pilote          -> Pas commencé
+  Déploiement     -> Pas commencé
+
+[Fournisseurs] Portail fournisseur (saisie directe des offres)
+  Développement   -> Pas commencé
+  Test            -> Pas commencé
+  Pilote          -> Pas commencé
+  Déploiement     -> Pas commencé
+
+[Logistique] Gestion des stocks liée aux réceptions
+  Développement   -> Pas commencé
+  Test            -> Pas commencé
+  Pilote          -> Pas commencé
+  Déploiement     -> Pas commencé
+
+[Sécurité] Authentification unique (SSO)
+  Développement   -> Pas commencé
+  Test            -> Pas commencé
+  Pilote          -> Pas commencé
+  Déploiement     -> Pas commencé
+

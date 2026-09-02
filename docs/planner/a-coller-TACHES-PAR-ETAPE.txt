@@ -1,0 +1,58 @@
+TÂCHES PAR ÉTAPE — à coller dans Planner (une ligne = une tâche)
+Concerne les fonctionnalités EN COURS et PLANIFIÉES
+(les fonctionnalités livrées ont déjà leurs 4 étapes terminées)
+
+### Recette utilisateur et ajustements [Qualité]
+Développement — Recette utilisateur et ajustements
+Test — Recette utilisateur et ajustements
+Pilote — Recette utilisateur et ajustements
+Déploiement — Recette utilisateur et ajustements
+
+### Durcissement des politiques d'accès (RLS) [Sécurité]
+Développement — Durcissement des politiques d'accès (RLS)
+Test — Durcissement des politiques d'accès (RLS)
+Pilote — Durcissement des politiques d'accès (RLS)
+Déploiement — Durcissement des politiques d'accès (RLS)
+
+### Journal d'audit des actions sensibles [Sécurité]
+Développement — Journal d'audit des actions sensibles
+Test — Journal d'audit des actions sensibles
+Pilote — Journal d'audit des actions sensibles
+Déploiement — Journal d'audit des actions sensibles
+
+### Authentification sécurisée (mots de passe hachés) [Sécurité]
+Développement — Authentification sécurisée (mots de passe hachés)
+Test — Authentification sécurisée (mots de passe hachés)
+Pilote — Authentification sécurisée (mots de passe hachés)
+Déploiement — Authentification sécurisée (mots de passe hachés)
+
+### Notifications par e-mail [Alertes]
+Développement — Notifications par e-mail
+Test — Notifications par e-mail
+Pilote — Notifications par e-mail
+Déploiement — Notifications par e-mail
+
+### Budgets par service avec alerte de dépassement [Pilotage]
+Développement — Budgets par service avec alerte de dépassement
+Test — Budgets par service avec alerte de dépassement
+Pilote — Budgets par service avec alerte de dépassement
+Déploiement — Budgets par service avec alerte de dépassement
+
+### Portail fournisseur (saisie directe des offres) [Fournisseurs]
+Développement — Portail fournisseur (saisie directe des offres)
+Test — Portail fournisseur (saisie directe des offres)
+Pilote — Portail fournisseur (saisie directe des offres)
+Déploiement — Portail fournisseur (saisie directe des offres)
+
+### Gestion des stocks liée aux réceptions [Logistique]
+Développement — Gestion des stocks liée aux réceptions
+Test — Gestion des stocks liée aux réceptions
+Pilote — Gestion des stocks liée aux réceptions
+Déploiement — Gestion des stocks liée aux réceptions
+
+### Authentification unique (SSO) [Sécurité]
+Développement — Authentification unique (SSO)
+Test — Authentification unique (SSO)
+Pilote — Authentification unique (SSO)
+Déploiement — Authentification unique (SSO)
+

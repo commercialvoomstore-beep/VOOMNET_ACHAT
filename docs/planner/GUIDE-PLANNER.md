@@ -165,6 +165,66 @@ Le mode sombre ne change pas ces libellés : ils restent dans le même ordre.
 
 ---
 
+## Les 4 colonnes d'étapes : Développement · Test · Pilote · Déploiement
+
+Ces colonnes suivent le **cycle de vie de chaque fonctionnalité**. Elles complètent la
+colonne « Progression » (qui donne la vue d'ensemble).
+
+### Signification
+
+| Colonne | Ce qu'elle mesure | Valeurs possibles |
+|---|---|---|
+| **Développement** | la fonctionnalité est-elle codée ? | `Terminé` · `En cours` · `Pas commencé` |
+| **Test** | a-t-elle été vérifiée (tests automatisés, recette) ? | idem |
+| **Pilote** | est-elle validée par un groupe d'utilisateurs ? | idem |
+| **Déploiement** | est-elle en production, visible de tous ? | idem |
+
+### Comment les colonnes sont remplies
+
+L'état des étapes est déduit de l'avancement de la tâche :
+
+| Avancement | Développement | Test | Pilote | Déploiement |
+|---|:--:|:--:|:--:|:--:|
+| **100 %** (livré) | Terminé | Terminé | Terminé | Terminé |
+| **≥ 60 %** | Terminé | En cours | Pas commencé | Pas commencé |
+| **≥ 30 %** | En cours | Pas commencé | Pas commencé | Pas commencé |
+| **0 %** (planifié) | Pas commencé | Pas commencé | Pas commencé | Pas commencé |
+
+👉 **Toutes les tâches livrées ont donc leurs 4 étapes à « Terminé »** — c'est ce qui
+montre visuellement à votre responsable que le travail est réellement en production,
+et pas seulement « fait ».
+
+### Deux façons de les utiliser dans Planner
+
+**1. En colonnes de la vue Grille** (recommandé)
+- copier `a-coller-DANS-LA-GRILLE.tsv` → coller dans la grille : les 4 colonnes
+  `Développement`, `Test`, `Pilote`, `Déploiement` sont déjà renseignées
+- si Planner ne propose pas ces colonnes : **Ajouter une colonne** et choisir
+  *Texte* ou *Choix*, puis nommer la colonne
+
+**2. En checklist à l'intérieur de chaque tâche**
+- ouvrir la tâche → **Checklist** → coller les 4 lignes figurant dans
+  `checklists-a-coller.txt` → cocher celles qui sont faites
+- avantage : l'avancement de la checklist s'affiche directement sur la carte
+
+### Ajouter les tâches par étape
+
+Le fichier `a-coller-TACHES-PAR-ETAPE.txt` décompose chaque fonctionnalité **en cours ou
+planifiée** en 4 tâches distinctes :
+
+```
+### Journal d'audit des actions sensibles [Sécurité]
+Développement — Journal d'audit des actions sensibles
+Test — Journal d'audit des actions sensibles
+Pilote — Journal d'audit des actions sensibles
+Déploiement — Journal d'audit des actions sensibles
+```
+
+À coller dans le compartiment `🔄 En cours` ou `📅 Planifié`. Les fonctionnalités déjà
+livrées n'y figurent pas (leurs 4 étapes sont terminées).
+
+---
+
 ## Contenu du dossier `docs/planner/`
 
 | Fichier | Usage |
@@ -172,8 +232,10 @@ Le mode sombre ne change pas ces libellés : ils restent dans le même ordre.
 | `a-coller-LIVRE.txt` | liste des tâches livrées, à coller dans le compartiment `✅ Livré` |
 | `a-coller-EN-COURS.txt` | idem pour `🔄 En cours` |
 | `a-coller-PLANIFIE.txt` | idem pour `📅 Planifié` |
-| **`a-coller-DANS-LA-GRILLE.tsv`** | **les 44 tâches formatées pour la vue Grille (9 colonnes) — à coller directement** |
+| **`a-coller-DANS-LA-GRILLE.tsv`** | ⭐ **les 44 tâches formatées pour la vue Grille — 13 colonnes dont Développement / Test / Pilote / Déploiement — à coller directement** |
 | **`VOOMNET-planner-GRILLE.csv`** | idem au format CSV (séparateur point-virgule) |
+| **`a-coller-TACHES-PAR-ETAPE.txt`** | chaque fonctionnalité en cours ou planifiée déclinée en 4 tâches (Développement, Test, Pilote, Déploiement) |
+| **`checklists-a-coller.txt`** | les 4 étapes à coller dans la checklist de chaque tâche, avec leur état |
 | **`VOOMNET-planner.xlsx`** | classeur complet : onglet `Grille` (tableau `GrilleVOOMNET`), onglet `Taches` (tableau `TachesVOOMNET`), onglet `Suivi`, onglets de collage par compartiment |
 | `VOOMNET-planner.csv` | données brutes (Power Automate ou Excel) |
 | `FICHE-RAPIDE.pdf` | la procédure en 1 page |

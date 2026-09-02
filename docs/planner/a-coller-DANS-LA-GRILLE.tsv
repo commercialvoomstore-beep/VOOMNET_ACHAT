@@ -1,45 +1,45 @@
-Nom de la tâche	Compartiment	Progression	Priorité	Assigné à	Date de début	Date d'échéance	Étiquettes	Description
-[Cadrage] Cadrage et analyse des besoins (100 %)	Livré	Terminé	Urgent	Projet	28/08/2026	28/08/2026	Cadrage	Objectifs, périmètre, règles de gestion
-[Cadrage] Choix de l'architecture (Next.js + Supabase) (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	28/08/2026	Cadrage	Application web + base temps réel
-[Sécurité] Authentification et gestion des 3 rôles (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	29/08/2026	Sécurité	Demandeur / Responsable / Administrateur
-[Demandes] Module demandes d'achat (assistant 6 étapes) (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	29/08/2026	Demandes	Création, brouillon, reprise
-[Demandes] Numérotation automatique ACH-AAAA-NNNNN (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	29/08/2026	Demandes	Compteur partagé, sans doublon
-[Demandes] Rendre le coût présumé facultatif (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	01/09/2026	Demandes	Demande créable sans montant
-[Fournisseurs] Catalogue fournisseurs (création, modification, statut) (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	30/08/2026	Fournisseurs	Nom, références, emplacement, WhatsApp, site
-[Fournisseurs] Import des fournisseurs (Excel, CSV, JSON) (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	30/08/2026	Fournisseurs	Aperçu, lignes invalides signalées
-[Fournisseurs] Export des fournisseurs et modèles de fichiers (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	30/08/2026	Fournisseurs	Excel, JSON, CSV
-[Négociation] Grille de négociation article × fournisseur (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	31/08/2026	Négociation	Un prix par article et par fournisseur
-[Négociation] Rendre les prix facultatifs (seuil paramétrable) (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Négociation	Seuil 0 = facultatif
-[Négociation] Coût total rendu (remise, TVA, frais de livraison) (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	31/08/2026	Négociation	Comparaison fiable des offres
-[Comparaison] Score multicritère /100 et classement (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	31/08/2026	Négociation	Prix, délai, garantie, paiement
-[Comparaison] Tableau croisé et meilleurs prix surlignés (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	31/08/2026	Négociation	Lecture seule, étape non bloquante
-[Validation] Circuit de validation (approuver / refuser / modifier) (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	01/09/2026	Validation	Motif obligatoire si refus
-[Commandes] Bons de commande BC-AAAA-NNNNN et confirmation (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	01/09/2026	Commandes	Lignes aux prix négociés
-[Commandes] Commande et impression sans fournisseur ni prix (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Commandes	Cas des consultations en cours
-[Réceptions] Réceptions complètes et partielles (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	01/09/2026	Commandes	Clôture automatique si complète
-[Administration] Suppressions (demande, commande, réception, utilisateur) (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	01/09/2026	Administration	Cascades et garde-fous
-[Alertes] Notifications et relances automatiques (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Alertes	Validation et réception, anti-doublon
-[Alertes] Bandeau d'alertes et pastilles sur le tableau de bord (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Alertes	Vue immédiate des retards
-[Alertes] Sons de notification (3 niveaux) et volume réglable (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Alertes	Avec son de secours si bloqué
-[Alertes] Alarme répétée jusqu'à lecture du message (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Alertes	15 s, maximum 10 répétitions
-[Alertes] Notifications du navigateur (bulles système) (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Alertes	Actives onglet en arrière-plan
-[Alertes] Alerte visuelle (onglet clignotant, pastille pulsante) (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Alertes	Secours si le son est coupé
-[Documents] Impression fiche de demande et bon de commande (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Documents	Colonnes de prix vides à compléter
-[Documents] Exports PDF (demandes, commandes, réceptions) (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	01/09/2026	Documents	jsPDF, repli impression
-[Documents] Exports Excel et CSV (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	01/09/2026	Documents	Comparaison incluse
-[Identité] Intégration du logo et charte violet / bleu nuit (100 %)	Livré	Terminé	Moyen	Direction	28/08/2026	02/09/2026	Documents	Site, impressions, PDF, favicon
-[Données] Synchronisation Supabase en temps réel (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Données	Partage entre tous les postes
-[Données] Sécurisation anti-écrasement entre appareils (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Données	Le serveur fait foi au démarrage
-[Pilotage] Tableau de bord graphique (3 graphiques) (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Pilotage	Achats 12 mois, répartition, top 5
-[Qualité] Suite de tests automatisés (197 contrôles) (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Qualité	13 séries, exécutées avant publication
-[Déploiement] Déploiement continu GitHub vers Vercel (100 %)	Livré	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Déploiement	Une commande : scripts/publish.mjs
-[Documentation] Cahier des charges et synthèse direction (100 %)	Livré	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Documentation	PDF et Word, 14 et 4 pages
-[Qualité] Recette utilisateur et ajustements (60 %)	En cours	En cours	Urgent	Direction	28/08/2026	05/09/2026	Qualité	Retours des utilisateurs finaux
-[Sécurité] Durcissement des politiques d'accès (RLS) (30 %)	En cours	En cours	Urgent	DSI	28/08/2026	09/09/2026	Sécurité	Restreindre par rôle avant généralisation
-[Sécurité] Journal d'audit des actions sensibles (15 %)	En cours	En cours	Urgent	DSI	28/08/2026	12/09/2026	Sécurité	Qui a supprimé/modifié quoi et quand
-[Sécurité] Authentification sécurisée (mots de passe hachés) (0 %)	Planifié	Pas commencé	Urgent	DSI		19/09/2026	Sécurité	Migration vers Supabase Auth
-[Alertes] Notifications par e-mail (0 %)	Planifié	Pas commencé	Moyen	DSI		26/09/2026	Alertes	Réduction des délais de réponse
-[Pilotage] Budgets par service avec alerte de dépassement (0 %)	Planifié	Pas commencé	Moyen	Direction		10/10/2026	Pilotage	Pilotage financier
-[Fournisseurs] Portail fournisseur (saisie directe des offres) (0 %)	Planifié	Pas commencé	Faible	DSI		24/10/2026	Fournisseurs	Productivité sur les consultations
-[Logistique] Gestion des stocks liée aux réceptions (0 %)	Planifié	Pas commencé	Faible	Logistique		31/10/2026	Pilotage	À cadrer
-[Sécurité] Authentification unique (SSO) (0 %)	Planifié	Pas commencé	Faible	DSI		31/10/2026	Sécurité	Confort utilisateur
+Nom de la tâche	Compartiment	Progression	Développement	Test	Pilote	Déploiement	Priorité	Assigné à	Date de début	Date d'échéance	Étiquettes	Description
+[Cadrage] Cadrage et analyse des besoins (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	Projet	28/08/2026	28/08/2026	Cadrage	Objectifs, périmètre, règles de gestion
+[Cadrage] Choix de l'architecture (Next.js + Supabase) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	28/08/2026	Cadrage	Application web + base temps réel
+[Sécurité] Authentification et gestion des 3 rôles (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	29/08/2026	Sécurité	Demandeur / Responsable / Administrateur
+[Demandes] Module demandes d'achat (assistant 6 étapes) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	29/08/2026	Demandes	Création, brouillon, reprise
+[Demandes] Numérotation automatique ACH-AAAA-NNNNN (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	29/08/2026	Demandes	Compteur partagé, sans doublon
+[Demandes] Rendre le coût présumé facultatif (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	01/09/2026	Demandes	Demande créable sans montant
+[Fournisseurs] Catalogue fournisseurs (création, modification, statut) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	30/08/2026	Fournisseurs	Nom, références, emplacement, WhatsApp, site
+[Fournisseurs] Import des fournisseurs (Excel, CSV, JSON) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	30/08/2026	Fournisseurs	Aperçu, lignes invalides signalées
+[Fournisseurs] Export des fournisseurs et modèles de fichiers (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	30/08/2026	Fournisseurs	Excel, JSON, CSV
+[Négociation] Grille de négociation article × fournisseur (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	31/08/2026	Négociation	Un prix par article et par fournisseur
+[Négociation] Rendre les prix facultatifs (seuil paramétrable) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Négociation	Seuil 0 = facultatif
+[Négociation] Coût total rendu (remise, TVA, frais de livraison) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	31/08/2026	Négociation	Comparaison fiable des offres
+[Comparaison] Score multicritère /100 et classement (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	31/08/2026	Négociation	Prix, délai, garantie, paiement
+[Comparaison] Tableau croisé et meilleurs prix surlignés (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	31/08/2026	Négociation	Lecture seule, étape non bloquante
+[Validation] Circuit de validation (approuver / refuser / modifier) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	01/09/2026	Validation	Motif obligatoire si refus
+[Commandes] Bons de commande BC-AAAA-NNNNN et confirmation (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	01/09/2026	Commandes	Lignes aux prix négociés
+[Commandes] Commande et impression sans fournisseur ni prix (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Commandes	Cas des consultations en cours
+[Réceptions] Réceptions complètes et partielles (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	01/09/2026	Commandes	Clôture automatique si complète
+[Administration] Suppressions (demande, commande, réception, utilisateur) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	01/09/2026	Administration	Cascades et garde-fous
+[Alertes] Notifications et relances automatiques (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Alertes	Validation et réception, anti-doublon
+[Alertes] Bandeau d'alertes et pastilles sur le tableau de bord (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Alertes	Vue immédiate des retards
+[Alertes] Sons de notification (3 niveaux) et volume réglable (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Alertes	Avec son de secours si bloqué
+[Alertes] Alarme répétée jusqu'à lecture du message (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Alertes	15 s, maximum 10 répétitions
+[Alertes] Notifications du navigateur (bulles système) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Alertes	Actives onglet en arrière-plan
+[Alertes] Alerte visuelle (onglet clignotant, pastille pulsante) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Alertes	Secours si le son est coupé
+[Documents] Impression fiche de demande et bon de commande (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Documents	Colonnes de prix vides à compléter
+[Documents] Exports PDF (demandes, commandes, réceptions) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	01/09/2026	Documents	jsPDF, repli impression
+[Documents] Exports Excel et CSV (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	01/09/2026	Documents	Comparaison incluse
+[Identité] Intégration du logo et charte violet / bleu nuit (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	Direction	28/08/2026	02/09/2026	Documents	Site, impressions, PDF, favicon
+[Données] Synchronisation Supabase en temps réel (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Données	Partage entre tous les postes
+[Données] Sécurisation anti-écrasement entre appareils (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Données	Le serveur fait foi au démarrage
+[Pilotage] Tableau de bord graphique (3 graphiques) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Pilotage	Achats 12 mois, répartition, top 5
+[Qualité] Suite de tests automatisés (197 contrôles) (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Qualité	13 séries, exécutées avant publication
+[Déploiement] Déploiement continu GitHub vers Vercel (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Urgent	DSI	28/08/2026	02/09/2026	Déploiement	Une commande : scripts/publish.mjs
+[Documentation] Cahier des charges et synthèse direction (100 %)	Livré	Terminé	Terminé	Terminé	Terminé	Terminé	Moyen	DSI	28/08/2026	02/09/2026	Documentation	PDF et Word, 14 et 4 pages
+[Qualité] Recette utilisateur et ajustements (60 %)	En cours	En cours	Terminé	En cours	Pas commencé	Pas commencé	Urgent	Direction	28/08/2026	05/09/2026	Qualité	Retours des utilisateurs finaux
+[Sécurité] Durcissement des politiques d'accès (RLS) (30 %)	En cours	En cours	En cours	Pas commencé	Pas commencé	Pas commencé	Urgent	DSI	28/08/2026	09/09/2026	Sécurité	Restreindre par rôle avant généralisation
+[Sécurité] Journal d'audit des actions sensibles (15 %)	En cours	En cours	En cours	Pas commencé	Pas commencé	Pas commencé	Urgent	DSI	28/08/2026	12/09/2026	Sécurité	Qui a supprimé/modifié quoi et quand
+[Sécurité] Authentification sécurisée (mots de passe hachés) (0 %)	Planifié	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Urgent	DSI		19/09/2026	Sécurité	Migration vers Supabase Auth
+[Alertes] Notifications par e-mail (0 %)	Planifié	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Moyen	DSI		26/09/2026	Alertes	Réduction des délais de réponse
+[Pilotage] Budgets par service avec alerte de dépassement (0 %)	Planifié	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Moyen	Direction		10/10/2026	Pilotage	Pilotage financier
+[Fournisseurs] Portail fournisseur (saisie directe des offres) (0 %)	Planifié	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Faible	DSI		24/10/2026	Fournisseurs	Productivité sur les consultations
+[Logistique] Gestion des stocks liée aux réceptions (0 %)	Planifié	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Faible	Logistique		31/10/2026	Pilotage	À cadrer
+[Sécurité] Authentification unique (SSO) (0 %)	Planifié	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Pas commencé	Faible	DSI		31/10/2026	Sécurité	Confort utilisateur
