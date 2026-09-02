@@ -113,17 +113,44 @@ Il recevra une invitation et verra immédiatement l'avancement.
 
 ---
 
-## Ce que votre responsable verra
+## Basculer entre les vues
 
-| Vue | Ce qu'elle montre |
-|---|---|
-| **Tableau** | les tâches par compartiment (Livré / En cours / Planifié) |
-| **Graphiques** | répartition par statut, par compartiment, par étiquette et par personne |
-| **Planning** | le calendrier des échéances (vue chronologique) |
-| **Grille** | le tableau détaillé avec dates, progression et responsables |
+Dans la barre supérieure du plan (à côté du nom du plan) :
 
-Le point clé : les vues **Graphiques** et **Planning** donnent une lecture immédiate de
-l'avancement sans ouvrir chaque tâche.
+```
+Tableau   Grille   Planning   Graphiques   Membres
+```
+
+Le mode sombre ne change pas ces libellés : ils restent dans le même ordre.
+
+## Ce que votre responsable verra, vue par vue
+
+### 📊 Vue Graphiques — la plus parlante pour un responsable
+- **Répartition par progression** : camembert *Terminé / En cours / En retard / Pas commencé*
+- **Par compartiment** : combien de tâches dans `✅ Livré`, `🔄 En cours`, `📅 Planifié`
+- **Par étiquette** et **par personne** : la charge par module et par intervenant
+
+👉 C'est la vue à montrer en réunion : l'avancement saute aux yeux sans lire de liste.
+
+### 📅 Vue Planning — la vue calendaire
+- Les tâches positionnées sur leur **semaine d'échéance**
+- Idéal pour répondre à « où en sera-t-on à la fin du mois ? »
+- Astuce : les tâches `✅ Livré` apparaissent également, ce qui matérialise le chemin parcouru
+
+### 🗂 Vue Tableau — la vue par compartiments
+- 3 colonnes : `✅ Livré` · `🔄 En cours` · `📅 Planifié`
+- Chaque carte affiche : titre, **étiquette de couleur** (module), échéance, assigné et
+  l'icône de progression
+- La plus proche de l'usage quotidien ; c'est celle que vous mettrez à jour chaque semaine
+
+### 🗒 Vue Grille — la vue tableur (celle de la 1re capture)
+- Tableau complet avec toutes les colonnes : *Nom de la tâche · Compartiment · Progression ·
+  Priorité · Assigné à · Date de début · Date d'échéance · Étiquettes · Description*
+- C'est la vue où l'on **colle** les données (méthode B ci-dessous) et où l'on peut
+  renseigner toutes les informations en masse
+
+> **Conseil** : montrez les **Graphiques** à votre responsable (lecture immédiate) et
+> gardez le **Tableau** pour le suivi opérationnel hebdomadaire.
 
 ---
 
@@ -145,8 +172,19 @@ l'avancement sans ouvrir chaque tâche.
 | `a-coller-LIVRE.txt` | liste des tâches livrées, à coller dans le compartiment `✅ Livré` |
 | `a-coller-EN-COURS.txt` | idem pour `🔄 En cours` |
 | `a-coller-PLANIFIE.txt` | idem pour `📅 Planifié` |
-| `VOOMNET-planner.xlsx` | suivi complet + onglets de collage par compartiment |
-| `VOOMNET-planner.csv` | données brutes (pour Power Automate ou Excel) |
+| **`a-coller-DANS-LA-GRILLE.tsv`** | **les 44 tâches formatées pour la vue Grille (9 colonnes) — à coller directement** |
+| **`VOOMNET-planner-GRILLE.csv`** | idem au format CSV (séparateur point-virgule) |
+| **`VOOMNET-planner.xlsx`** | classeur complet : onglet `Grille` (tableau `GrilleVOOMNET`), onglet `Taches` (tableau `TachesVOOMNET`), onglet `Suivi`, onglets de collage par compartiment |
+| `VOOMNET-planner.csv` | données brutes (Power Automate ou Excel) |
+| `FICHE-RAPIDE.pdf` | la procédure en 1 page |
+
+### Colonnes de l'export Grille (validées)
+
+`Nom de la tâche` · `Compartiment` · `Progression` · `Priorité` · `Assigné à` ·
+`Date de début` · `Date d'échéance` · `Étiquettes` · `Description`
+
+Valeurs prêtes pour Planner : Progression = `Terminé` / `En cours` / `Pas commencé` ;
+Priorité = `Urgent` / `Moyen` / `Faible` ; Étiquettes = module concerné.
 
 ---
 
