@@ -1,0 +1,6 @@
+À coller dans le compartiment « En cours » de Microsoft Planner
+(sélectionner les lignes ci-dessous, copier, puis coller dans « Ajouter une tâche »)
+
+[Qualité] Recette utilisateur et ajustements (60 %)
+[Sécurité] Durcissement des politiques d'accès (RLS) (30 %)
+[Sécurité] Journal d'audit des actions sensibles (15 %)

@@ -1,0 +1,9 @@
+À coller dans le compartiment « Planifié » de Microsoft Planner
+(sélectionner les lignes ci-dessous, copier, puis coller dans « Ajouter une tâche »)
+
+[Sécurité] Authentification sécurisée (mots de passe hachés) (0 %)
+[Alertes] Notifications par e-mail (0 %)
+[Pilotage] Budgets par service avec alerte de dépassement (0 %)
+[Fournisseurs] Portail fournisseur (saisie directe des offres) (0 %)
+[Logistique] Gestion des stocks liée aux réceptions (0 %)
+[Sécurité] Authentification unique (SSO) (0 %)
