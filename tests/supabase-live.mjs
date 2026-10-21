@@ -14,7 +14,7 @@ const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 
 const client = createClient(URL_, KEY, { auth: { persistSession: false }, realtime: { transport: ws } });
 const count = async (t) => { const { data } = await client.from(t).select("id"); return (data || []).length; };
-const distant = {
+let distant = {
   users: await count("users"), suppliers: await count("suppliers"),
   requests: await count("requests"), orders: await count("orders"), meta: await count("meta")
 };
@@ -32,7 +32,14 @@ const { initVoomnet } = await import(enginePath);
 initVoomnet();
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-await wait(4000);
+/* Attente active de l'hydratation : on patiente jusqu'à 30 s, en relisant le
+   serveur au cas où les données auraient changé entre-temps (test réseau). */
+for (let essai = 0; essai < 15; essai++){
+  await wait(2000);
+  const loc = JSON.parse(w.localStorage.getItem("voomnet_achats_v4") || "{}");
+  if ((loc.users || []).length === distant.users && (loc.suppliers || []).length === distant.suppliers) break;
+  distant = { users: await count("users"), suppliers: await count("suppliers"), requests: await count("requests"), orders: await count("orders"), meta: await count("meta") };
+}
 const db = JSON.parse(w.localStorage.getItem("voomnet_achats_v4") || "{}");
 const local = {
   users: (db.users || []).length, suppliers: (db.suppliers || []).length,

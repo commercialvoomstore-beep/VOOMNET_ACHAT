@@ -23,7 +23,17 @@ const $ = (s) => w.document.querySelector(s);
 const $$ = (s) => [...w.document.querySelectorAll(s)];
 const click = (el) => el && el.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
 const input = (el, v) => { el.value = String(v); el.dispatchEvent(new w.Event("input", { bubbles: true })); };
-const nav = (p) => click($$("#sidebar-nav .nav-item").find((b) => b.dataset.page === p));
+/* Quitter l'assistant avec un brouillon rempli demande désormais une confirmation :
+   les tests l'acceptent automatiquement. */
+const accepterConfirmation = () => {
+  const m = $("#modal-root");
+  if (m && m.textContent.trim()){
+    const b = $$("#modal-root [data-mbtn]")[1];        /* [Annuler, Confirmer] */
+    if (b) b.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  }
+};
+const _navBase = (p) => click($$("#sidebar-nav .nav-item").find((b) => b.dataset.page === p));
+const nav = (p) => { _navBase(p); accepterConfirmation(); };
 const txt = () => $("#page-content").textContent.replace(/\s+/g, " ");
 const lastToast = () => $("#toast-root").lastElementChild?.textContent || "";
 const db = () => JSON.parse(w.localStorage.getItem("voomnet_achats_v4"));

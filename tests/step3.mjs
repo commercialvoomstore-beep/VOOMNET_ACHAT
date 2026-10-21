@@ -26,7 +26,17 @@ const $$ = (s) => [...w.document.querySelectorAll(s)];
 const click = (el) => el && el.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
 const input = (el, v) => { el.value = String(v); el.dispatchEvent(new w.Event("input", { bubbles: true })); };
 const change = (el, v) => { el.value = String(v); el.dispatchEvent(new w.Event("change", { bubbles: true })); };
-const nav = (page) => click($$("#sidebar-nav .nav-item").find((b) => b.dataset.page === page));
+/* Quitter l'assistant avec un brouillon rempli demande désormais une confirmation :
+   les tests l'acceptent automatiquement. */
+const accepterConfirmation = () => {
+  const m = $("#modal-root");
+  if (m && m.textContent.trim()){
+    const b = $$("#modal-root [data-mbtn]")[1];        /* [Annuler, Confirmer] */
+    if (b) b.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  }
+};
+const _navBase = (page) => click($$("#sidebar-nav .nav-item").find((b) => b.dataset.page === page));
+const nav = (p) => { _navBase(p); accepterConfirmation(); };
 const txt = () => $("#page-content").textContent.replace(/\s+/g, " ");
 const money = (s) => String(s).replace(/[  ]/g, " ");
 const lastToast = () => ($("#toast-root").lastElementChild?.textContent || "");

@@ -16,7 +16,17 @@ initVoomnet();
 const $=(s)=>w.document.querySelector(s); const $$=(s)=>[...w.document.querySelectorAll(s)];
 const click=(el)=>el&&el.dispatchEvent(new w.MouseEvent("click",{bubbles:true}));
 const change=(el,v)=>{ el.value=String(v); el.dispatchEvent(new w.Event("change",{bubbles:true})); };
-const nav=(p)=>click($$("#sidebar-nav .nav-item").find(b=>b.dataset.page===p));
+/* Quitter l'assistant avec un brouillon rempli demande désormais une confirmation :
+   les tests l'acceptent automatiquement. */
+const accepterConfirmation = () => {
+  const m = $("#modal-root");
+  if (m && m.textContent.trim()){
+    const b = $$("#modal-root [data-mbtn]")[1];        /* [Annuler, Confirmer] */
+    if (b) b.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  }
+};
+const _navBase = (p)=>click($$("#sidebar-nav .nav-item").find(b=>b.dataset.page===p));
+const nav = (p) => { _navBase(p); accepterConfirmation(); };
 const wait=(ms)=>new Promise(r=>setTimeout(r,ms));
 const ok=[],ko=[]; const check=(l,c,x="")=>(c?ok:ko).push(`${c?"✅":"⛔"} ${l}${x?" — "+x:""}`);
 const login=(u,p)=>{ $("#login-id").value=u; $("#login-pw").value=p;

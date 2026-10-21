@@ -950,6 +950,7 @@ function doLogin(id, pw){
   toast('Bienvenue ' + u.nom + ' 👋', 'ok');
 }
 function doLogout(){
+  nettoyerDraftVide();          /* NIVEAU 2 : pas de brouillon vide abandonné */
   sessionUser = null;
   storage.removeItem(SESSION_KEY);
   $('#sidebar').classList.remove('open');
@@ -1026,7 +1027,31 @@ function buildSidebar(){
   }).join('');
 }
 
+/* Sortie de l'assistant : nettoyage si vide, confirmation si du contenu existe */
+function quitterAssistant(page, params, action){
+  const dansWizard = state.page === 'nouvelleDemande';
+  if (dansWizard && draft && page !== 'nouvelleDemande'){
+    if (!(draft.articles || []).length){
+      nettoyerDraftVide();                       /* NIVEAU 2 : rien à conserver */
+    } else {
+      /* NIVEAU 3 : confirmation avant de quitter un brouillon qui a du contenu */
+      confirmModal('Quitter la demande en cours ?<br><span class="text-muted small">Le brouillon reste enregistré — vous pourrez le reprendre depuis « Mes demandes ».</span>',
+        () => { action(page, params); });
+      return;
+    }
+  }
+  if (dansWizard && draft && page === 'nouvelleDemande' && (draft.articles || []).length){
+    confirmModal('Abandonner la demande en cours et en créer une nouvelle ?', () => { action(page, params); });
+    return;
+  }
+  action(page, params);
+}
+
 function go(page, params = {}){
+  quitterAssistant(page, params, (pg, pr) => goInterne(pg, pr));
+}
+
+function goInterne(page, params = {}){
   const p = PAGES[page];
   if (p && p.perm && !hasPermission(p.perm)) { toast('Accès refusé : vous n\'avez pas la permission d\'accéder à cet écran.', 'err'); return; }
   if (page === 'detailDemande') {
@@ -2128,8 +2153,9 @@ function achatsParMois(nbMois){
   return serie.map((x) => Object.assign(x, { texte: fmtM(x.valeur) }));
 }
 function repartitionStatuts(){
+  const liste = DB.requests.filter(r => !estBrouillonVide(r));   /* NIVEAU 2 */
   return Object.keys(STATUTS).map((k) => ({
-    cle: k, libelle: STATUTS[k].label, valeur: DB.requests.filter((r) => r.statut === k).length,
+    cle: k, libelle: STATUTS[k].label, valeur: liste.filter((r) => r.statut === k).length,
     couleur: COULEUR_STATUT[k] || '#94a3b8'
   }));
 }
@@ -2154,7 +2180,7 @@ function recentRequestsTable(rows, nav){
       <td>${esc(userName(r.demandeurId))}</td>
       <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.motif)}">${esc(r.motif)}</td>
       <td class="num">${montantDemande(r) ? fmtM(montantDemande(r)) : '—'}</td>
-      <td>${badge(r.statut)}</td>
+      <td>${badge(r.statut)}${estBrouillonVide(r) ? ' <span class="badge b-gray">VIDE</span>' : ''}</td>
       <td><button class="btn sm outline" data-act="view-request" data-id="${r.id}" data-nav="${nav}">Consulter</button></td>
     </tr>`).join('')}
   </table></div>`;
@@ -2169,7 +2195,7 @@ function viewDashboard(){
 }
 
 function dashboardAdmin(){
-  const R = DB.requests;
+  const R = DB.requests.filter(r => !estBrouillonVide(r));   /* NIVEAU 2 */
   const orders = DB.orders.filter(o => o.statut === 'Confirmée');
   const totalAchats = orders.reduce((s,o) => s + (+o.total||0), 0);
   const cmdEnCours = orders.filter(o => {
@@ -2197,7 +2223,7 @@ function dashboardAdmin(){
 }
 
 function dashboardResponsable(){
-  const R = DB.requests;
+  const R = DB.requests.filter(r => !estBrouillonVide(r));   /* NIVEAU 2 */
   const aValider = R.filter(r => r.statut === 'en_attente');
   const approuvees = R.filter(r => r.validation && r.validation.decision === 'Approuvée');
   const refusees = R.filter(r => r.statut === 'refusee');
@@ -2213,7 +2239,7 @@ function dashboardResponsable(){
 }
 
 function dashboardDemandeur(){
-  const mine = DB.requests.filter(r => r.demandeurId === sessionUser.id);
+  const mine = DB.requests.filter(r => r.demandeurId === sessionUser.id && !estBrouillonVide(r));   /* NIVEAU 2 */
   const flow = ['Je saisis les articles, quantités et coûts présumés','Je choisis des fournisseurs (coordonnées affichées)','J\'appelle les fournisseurs et je saisis les prix négociés','Je compare les offres (prix, délais, garanties)','Je choisis une offre et je soumets','Le responsable valide','La commande est créée aux prix négociés','La marchandise est réceptionnée'];
   return `
   <div class="card">
@@ -2272,7 +2298,7 @@ function viewRequestsList(page){
         ${page!=='mesDemandes'?`<td>${esc(userName(r.demandeurId))}<div class="cell-sub">${esc(byId(DB.users,r.demandeurId)?.service||'')}</div></td>`:''}
         <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(r.motif)}">${esc(r.motif)}</td>
         <td class="num">${montantDemande(r) ? fmtM(montantDemande(r)) : '—'}</td>
-        <td>${badge(r.statut)}</td>
+        <td>${badge(r.statut)}${estBrouillonVide(r) ? ' <span class="badge b-gray">VIDE</span>' : ''}</td>
         <td><div class="actions-bar" style="margin:0">
           <button class="btn sm outline" data-act="view-request" data-id="${r.id}" data-nav="${page}">Consulter</button>
           ${canContinue?`<button class="btn sm primary" data-act="resume-request" data-id="${r.id}">${r.statut==='modification'?'Reprendre':'Continuer'}</button>`:''}
@@ -2434,21 +2460,77 @@ function nextNumero(prefix, counter){
   return prefix + '-' + new Date().getFullYear() + '-' + String(counter).padStart(5, '0');
 }
 function startNewDraft(){
-  DB.meta.achCounter = (DB.meta.achCounter || 0) + 1;
+  /* NIVEAU 1 : plus de numéro consommé ni d'écriture en base à l'ouverture de
+     l'écran. Le brouillon vit en mémoire avec un numéro provisoire ; il ne
+     devient définitif qu'au premier enregistrement (article ajouté ou saisie). */
   draft = {
-    id: uid('r'), numero: nextNumero('ACH', DB.meta.achCounter), date: nowISO(),
+    id: uid('r'), numero: nextNumero('ACH', (DB.meta.achCounter || 0) + 1), date: nowISO(),
+    _persiste: false,
     demandeurId: sessionUser.id, service: sessionUser.service || '', priorite: 'Moyenne', motif: '',
     articles: [],
     supplierIds: [], offers: {}, chosenSupplierId: null, justification: '',
     statut: 'brouillon', step: 1, history: [{date: nowISO(), ev: 'Demande créée'}]
   };
-  saveDraft();
+  /* volontairement aucun saveDraft() ici : rien n'est écrit en base */
 }
 function saveDraft(){
   if (!draft) return;
+  /* Premier enregistrement : attribution du numéro définitif */
+  if (!draft._persiste){
+    DB.meta.achCounter = (DB.meta.achCounter || 0) + 1;
+    draft.numero = nextNumero('ACH', DB.meta.achCounter);
+    draft._persiste = true;
+  }
+  draft._savedAt = nowISO();
   const i = DB.requests.findIndex(r => r.id === draft.id);
   if (i >= 0) DB.requests[i] = draft; else DB.requests.push(draft);
   saveDB();
+}
+/* Enregistrement automatique à la saisie : temporisé pour ne pas écrire à chaque frappe */
+let minuteurSave = null;
+function saveDraftAuto(delai){
+  clearTimeout(minuteurSave);
+  minuteurSave = setTimeout(() => { saveDraft(); majIndicateurSave(); }, delai || 900);
+}
+function majIndicateurSave(){
+  const el = $('#wiz-save-indicator');
+  if (!el || !draft) return;
+  el.innerHTML = draft._persiste && draft._savedAt
+    ? `💾 Enregistré à ${new Date(draft._savedAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`
+    : 'Brouillon non enregistré';
+}
+
+/* ---------- NIVEAU 2 : gestion des brouillons vides ---------- */
+const estBrouillonVide = (r) => !!r && r.statut === 'brouillon' && !(r.articles || []).length;
+function purgerBrouillonsVides(jours){
+  const limite = Date.now() - (jours || 7) * 86400000;
+  const avant = DB.requests.length;
+  DB.requests = DB.requests.filter(r => {
+    if (!estBrouillonVide(r)) return true;
+    const d = r.date ? new Date(r.date).getTime() : Date.now();
+    return d >= limite;                       /* seuls les anciens sont purgés */
+  });
+  const nb = avant - DB.requests.length;
+  if (nb) saveDB();
+  return nb;
+}
+function recalibrerCompteur(force){
+  let max = 0;
+  (DB.requests || []).forEach(r => {
+    const m = String(r.numero || '').match(/ACH-\d{4}-(\d+)/);
+    if (m) max = Math.max(max, +m[1]);
+  });
+  if (!max && !force) return DB.meta.achCounter;
+  if (DB.meta.achCounter !== max){ DB.meta.achCounter = max; saveDB(); }
+  return DB.meta.achCounter;
+}
+function nettoyerDraftVide(){
+  if (!draft) return false;
+  if ((draft.articles || []).length) return false;   /* a du contenu : conservé */
+  DB.requests = DB.requests.filter(r => r.id !== draft.id);
+  draft = null;
+  saveDB();
+  return true;
 }
 function resumeRequest(id){
   const r = byId(DB.requests, id);
@@ -2486,12 +2568,18 @@ function renderWizard(){
       <button class="btn outline" data-act="print-request" data-id="${draft ? draft.id : ''}">🖨️ Imprimer la fiche</button>
       <button class="btn outline" data-act="wiz-goto" data-step="1">✏️ Modifier</button>
       <button class="btn success" data-act="submit-request">📤 Soumettre pour validation</button>`; }
+  const titreDraft = draft._persiste ? `${esc(draft.numero)} — Nouvelle demande` : 'Nouvelle demande';
+  const badgeDraft = draft._persiste
+    ? '<span class="badge b-amber">BROUILLON ENREGISTRÉ</span>'
+    : '<span class="badge b-gray">BROUILLON — NON ENREGISTRÉ</span>';
   $('#page-content').innerHTML = `
     <div class="card">
-      <h2>📝 ${esc(draft.numero)} — Nouvelle demande
+      <h2>📝 ${titreDraft} ${badgeDraft}
+        <span class="small text-muted" id="wiz-save-indicator" style="margin-left:8px"></span>
         <span class="h-actions"><button class="btn outline sm" data-act="wiz-savequit">💾 Enregistrer et quitter</button></span>
       </h2>${stepper}${body}<div class="wiz-foot">${foot}</div>
     </div>`;
+  majIndicateurSave();
 }
 
 /* ---------- Étape 1 : articles demandés, quantités, coût présumé, somme globale ---------- */
@@ -3665,7 +3753,7 @@ function showAppTopbar(){
 
 /* ============================= 13. RAPPORTS & PARAMÈTRES ============================= */
 function viewReports(){
-  const R = DB.requests, orders = DB.orders.filter(o => o.statut === 'Confirmée');
+  const R = DB.requests.filter(r => !estBrouillonVide(r)), orders = DB.orders.filter(o => o.statut === 'Confirmée');   /* NIVEAU 2 */
   const totalAchats = orders.reduce((s,o) => s + (+o.total||0), 0);
   const decided = R.filter(r => r.validation);
   const taux = decided.length ? Math.round(100 * decided.filter(r => r.validation.decision === 'Approuvée').length / decided.length) : 0;
@@ -3797,6 +3885,15 @@ function viewSettings(){
       <span class="hint">État : <b>${esc(notifNavLabel[notifNavEtat()] || '')}</b>. Une fois activées, les alertes s'affichent <b>même si l'onglet VOOMNET est en arrière-plan</b> (le navigateur joue alors son propre son).</span>
     </div>
   </div>
+  <div class="card"><h2>🧹 Numérotation et brouillons</h2>
+    <div class="kv"><span>Prochain numéro de demande</span><span><b>ACH-${new Date().getFullYear()}-${String((DB.meta.achCounter || 0) + 1).padStart(5, '0')}</b></span></div>
+    <div class="kv"><span>Brouillons vides en base</span><span>${DB.requests.filter(estBrouillonVide).length}</span></div>
+    <div class="actions-bar">
+      <button class="btn outline sm" data-act="purge-drafts">🧹 Purger les brouillons vides</button>
+      <button class="btn outline sm" data-act="recalibrer">🔢 Réaligner la numérotation</button>
+    </div>
+    <p class="small text-muted" style="margin-top:8px">Les brouillons sans article ne sont plus enregistrés depuis le correctif ; ces boutons nettoient les anciens et resserrent la numérotation.</p>
+  </div>
   <div class="card"><h2>♻️ Réinitialisation de la démonstration</h2>
     <p class="small text-muted" style="margin-bottom:12px">Supprime toutes les données locales (fournisseurs importés, demandes, commandes…) et recrée le jeu de données de démonstration : 5 utilisateurs, 10 fournisseurs, 5 demandes, commandes et réceptions.</p>
     <button class="btn danger" data-act="reset-demo">🗑️ Réinitialiser les données de démonstration</button>
@@ -3858,11 +3955,25 @@ document.addEventListener('click', e => {
       break;
     }
     /* --- Assistant --- */
-    case 'add-article':  collectStep1(true); draft.articles.push({designation:'',reference:'',description:'',quantite:1,prix:0}); renderWizard(); break;
-    case 'del-article':  collectStep1(true); draft.articles.splice(+id,1); if (!draft.articles.length) draft.articles.push({designation:'',reference:'',description:'',quantite:1,prix:0}); renderWizard(); break;
+    /* NIVEAU 1 : la demande n'est créée en base qu'au premier article ajouté */
+    case 'add-article':  collectStep1(true); draft.articles.push({designation:'',reference:'',description:'',quantite:1,prix:0});
+      if ((draft.articles || []).length) saveDraft();
+      renderWizard(); break;
+    case 'del-article':  collectStep1(true); draft.articles.splice(+id,1);
+      if (!(draft.articles || []).length){ nettoyerDraftVide(); startNewDraft(); }
+      else saveDraft();
+      renderWizard(); break;
     case 'wiz-back':     draft.step = Math.max(1, (draft.step||1) - 1); saveDraft(); renderWizard(); break;
     case 'wiz-goto':     draft.step = +el.dataset.step; saveDraft(); renderWizard(); break;
-    case 'wiz-savequit': collectStep1(true); if (draft.statut !== 'modification') draft.statut = draft.step >= 3 ? 'en_comparaison' : 'brouillon'; saveDraft(); toast('Brouillon « ' + draft.numero + ' » enregistré 💾', 'ok'); draft = null; go('mesDemandes'); break;
+    /* NIVEAU 1 : un brouillon sans article n'est pas enregistré du tout */
+    case 'wiz-savequit': collectStep1(true);
+      if (!(draft.articles || []).length){
+        nettoyerDraftVide();
+        toast('Brouillon vide : rien n\'a été enregistré (ajoutez au moins un article).', 'warn');
+        draft = null; go('mesDemandes'); break;
+      }
+      if (draft.statut !== 'modification') draft.statut = draft.step >= 3 ? 'en_comparaison' : 'brouillon';
+      saveDraft(); toast('Brouillon « ' + draft.numero + ' » enregistré 💾', 'ok'); draft = null; go('mesDemandes'); break;
     case 'wiz-next': {
       const step = draft.step || 1;
       if (step === 1){ if (!collectStep1()) return; draft.step = 2; }
@@ -3956,6 +4067,21 @@ document.addEventListener('click', e => {
     case 'notifnav-on':     activerNotifNav(); break;
     case 'notifnav-off':    desactiverNotifNav(); break;
     case 'test-notifnav':   notifierNavigateur('VOOMNET — test', 'Les notifications système fonctionnent correctement 🔔'); break;
+    case 'purge-drafts': {
+      const n = DB.requests.filter(estBrouillonVide).length;
+      if (!n){ toast('Aucun brouillon vide à supprimer.', 'ok'); break; }
+      confirmModal(`Supprimer ${n} brouillon(s) vide(s) ?`, () => {
+        DB.requests = DB.requests.filter(r => !estBrouillonVide(r));
+        saveDB(); toast(`${n} brouillon(s) vide(s) supprimé(s) 🧹`, 'ok'); render();
+      }, 'Supprimer');
+      break;
+    }
+    case 'recalibrer': {
+      const actuel = DB.meta.achCounter || 0;
+      confirmModal(`Réaligner la numérotation ?<br><span class="text-muted small">Le compteur passera de ${actuel} au dernier numéro réellement utilisé, afin d'éviter les trous dans la séquence.</span>`,
+        () => { const v = recalibrerCompteur(true); toast('Numérotation réalignée sur ' + v + ' 🔢', 'ok'); render(); }, 'Réaligner');
+      break;
+    }
     case 'toggle-son': {
       const activer = !sonActif();
       setSonActif(activer);
@@ -3984,6 +4110,8 @@ document.addEventListener('input', e => {
     a[f] = (f==='quantite'||f==='prix') ? (+t.value||0) : t.value;
     $(`[data-arttotal="${i}"]`).textContent = fmtM((+a.quantite||0)*(+a.prix||0));
     $('[data-art-grand]').textContent = fmtM(totalEstimatif(draft));
+    /* NIVEAU 3 : enregistrement automatique dès la première saisie */
+    if (draft && (draft.articles || []).length) saveDraftAuto();
     return;
   }
   if (t.matches('#wiz-sup-q')){ wizSupQ = t.value; $('#wiz-sup-list').innerHTML = wizSupplierList(); return; }
@@ -4001,6 +4129,8 @@ document.addEventListener('input', e => {
       o[f] = (f === 'delai' || f === 'garantie' || f === 'remise' || f === 'fraisLivraison') ? (+t.value || 0) : t.value;
     }
     refreshNegoLive(draft, sid, idx);
+    /* NIVEAU 3 : enregistrement automatique des prix saisis */
+    if (draft && draft._persiste) saveDraftAuto();
     return;
   }
   if (t.dataset && t.dataset.filter === 'req-q'){ fReqQ = t.value; render(); $('[data-filter="req-q"]').focus(); return; }
@@ -4120,6 +4250,10 @@ function startRealtime(){
   else showLogin();
   hydrateRemote();
   startRealtime();
+  /* NIVEAU 2 : purge des brouillons vides de plus de 7 jours, puis réalignement
+     du compteur de numérotation sur le dernier numéro réellement utilisé */
+  purgerBrouillonsVides(7);
+  recalibrerCompteur(false);
   installerDeblocageAudio();  // débloque l'audio dès la première interaction
   demarrerSurveillanceAlarme();  // alarme répétée tant qu'il reste des notifications non lues
   genererRappels();          // relances automatiques (une seule fois par jour)

@@ -16,7 +16,17 @@ const check = (l, c, x = "") => t.push(`${c ? "✅" : "⛔"} ${l}${x ? " — " +
 $("#login-id").value = "admin"; $("#login-pw").value = "admin123";
 $("#login-form").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
 check("Connexion admin (standalone)", !$("#app").classList.contains("hidden"));
-const nav = (p) => click($$("#sidebar-nav .nav-item").find((b) => b.dataset.page === p));
+/* Quitter l'assistant avec un brouillon rempli demande désormais une confirmation :
+   les tests l'acceptent automatiquement. */
+const accepterConfirmation = () => {
+  const m = $("#modal-root");
+  if (m && m.textContent.trim()){
+    const b = $$("#modal-root [data-mbtn]")[1];        /* [Annuler, Confirmer] */
+    if (b) b.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  }
+};
+const _navBase = (p) => click($$("#sidebar-nav .nav-item").find((b) => b.dataset.page === p));
+const nav = (p) => { _navBase(p); accepterConfirmation(); };
 nav("nouvelleDemande");
 click($('[data-act="add-article"]'));
 let a = $$(".art input[data-ai]");

@@ -32,7 +32,17 @@ await wait(4000);
 $("#login-id").value = "admin"; $("#login-pw").value = "admin123";
 $("#login-form").dispatchEvent(new w.Event("submit", { bubbles: true, cancelable: true }));
 await wait(4000);
-const nav = (p) => { const b = $$("#sidebar-nav .nav-item").find((x) => x.dataset.page === p); b && b.dispatchEvent(new w.MouseEvent("click", { bubbles: true })); };
+/* Quitter l'assistant avec un brouillon rempli demande désormais une confirmation :
+   les tests l'acceptent automatiquement. */
+const accepterConfirmation = () => {
+  const m = $("#modal-root");
+  if (m && m.textContent.trim()){
+    const b = $$("#modal-root [data-mbtn]")[1];        /* [Annuler, Confirmer] */
+    if (b) b.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
+  }
+};
+const _navBase = (p) => { const b = $$("#sidebar-nav .nav-item").find((x) => x.dataset.page === p); b && b.dispatchEvent(new w.MouseEvent("click", { bubbles: true })); };
+const nav = (p) => { _navBase(p); accepterConfirmation(); };
 nav("fournisseurs"); await wait(2500);
 nav("toutesDemandes"); await wait(2500);
 
