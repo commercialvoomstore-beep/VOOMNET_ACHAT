@@ -1015,7 +1015,7 @@ const PAGES = {
   parametres:           {icon:'⚙️', label:'Paramètres',                 perm:'manageSettings'}
 };
 const MENUS = {
-  admin:       ['dashboard','nouvelleDemande','mesDemandes','toutesDemandes','fournisseurs','utilisateurs','commandes','receptions','rapports','parametres'],
+  admin:       ['dashboard','nouvelleDemande','mesDemandes','toutesDemandes','aValider','historiqueValidations','fournisseurs','utilisateurs','commandes','receptions','rapports','parametres'],
   demandeur:   ['dashboard','nouvelleDemande','mesDemandes','fournisseurs','commandes','receptions'],
   responsable: ['dashboard','nouvelleDemande','mesDemandes','aValider','historiqueValidations','fournisseurs','commandes','receptions']
 };
@@ -2054,7 +2054,7 @@ function genererRappels(){
     const cle = 'REL-' + a.cle + '-' + auj;
     let cibles = [];
     if (a.cibles === 'responsable'){
-      cibles = DB.users.filter(u => u.role === 'responsable' && u.statut === 'Actif');
+      cibles = DB.users.filter(u => (u.role === 'responsable' || u.role === 'admin') && u.statut === 'Actif');
     } else {
       const proprio = byId(DB.users, a.demandeurId);
       if (proprio && proprio.statut === 'Actif') cibles.push(proprio);
@@ -2279,9 +2279,13 @@ function viewRequestsList(page){
   else { rows = DB.requests.slice(); title = '🛒 Toutes les demandes'; emptyMsg = 'Aucune demande enregistrée.'; }
 
   const isAdmin = sessionUser.role === 'admin';
+  const indiceValidation = hasPermission('validateRequests')
+    ? `<p class="small text-muted" style="margin:2px 0 10px">💡 Ouvrez une demande pour l'approuver, la refuser ou demander une modification.</p>`
+    : `<p class="small text-muted" style="margin:2px 0 10px">👁️ Consultation en lecture seule : seuls les utilisateurs ayant le rôle <b>Responsable</b> peuvent valider.</p>`;
   let html = `<div class="card"><h2>${title}
       <span class="h-actions">${page === 'mesDemandes' ? '<button class="btn primary sm" data-act="nav" data-page="nouvelleDemande">＋ Nouvelle demande</button>' : ''}<button class="btn outline sm" data-act="export-requests">📊 Exporter Excel</button><button class="btn outline sm" data-act="export-pdf-requests">📄 PDF</button></span>
     </h2>
+    ${page === 'aValider' ? indiceValidation : ''}
     <div class="toolbar">
       <input type="search" class="search" placeholder="🔎 Rechercher (numéro, motif, demandeur…)" value="${esc(fReqQ)}" data-filter="req-q">
       <select data-filter="req-status">
@@ -2875,6 +2879,7 @@ function submitRequest(){
   pushHist(draft, 'Demande soumise pour validation');
   saveDraft();
   notifyRole('responsable', `🔔 Nouvelle demande ${draft.numero} à valider.`);
+  notifyRole('admin', `🔔 Nouvelle demande ${draft.numero} à valider.`);
   toast('Demande ' + draft.numero + ' soumise pour validation ✅', 'ok');
   const numero = draft.numero; draft = null;
   go(hasPermission('viewOwnRequests') ? 'mesDemandes' : 'toutesDemandes');

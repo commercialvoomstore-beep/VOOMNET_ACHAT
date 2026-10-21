@@ -93,6 +93,22 @@ if (btnApprove){
   check("La demande est bien approuvée", apres && apres.statut === "approuvee", apres?.statut);
 }
 
+/* ============ ADMINISTRATEUR : voir les demandes à valider ============ */
+logout();
+login("admin", "admin123");
+const mAdm2 = menu();
+check("Menu admin : « Demandes à valider » présente", mAdm2.includes('aValider'), mAdm2.join(', '));
+check("Menu admin : « Historique des validations » présente", mAdm2.includes('historiqueValidations'));
+const btnValiderAdmin = $$("#sidebar-nav .nav-item").find((b) => b.dataset.page === "aValider");
+check("Badge compteur sur « Demandes à valider » dans le menu admin", !!btnValiderAdmin?.querySelector(".cnt"), btnValiderAdmin?.innerHTML);
+check("L'administrateur reçoit aussi la notification (badge cloche 🔔)", ($("#bell-badge")?.textContent || "0") !== "0", "badge cloche = " + ($("#bell-badge")?.textContent || "0"));
+aller("aValider");
+const pageValider = $("#page-content").textContent.replace(/\s+/g, ' ');
+check("L'administrateur accède à la page « Demandes à valider »", /Demandes à valider/.test(pageValider), pageValider.slice(0, 90));
+check("Indice d'action affiché (l'admin peut valider)", /Ouvrez une demande pour l'approuver/.test(pageValider), pageValider.slice(0, 120));
+const nbAttente = db().requests.filter((r) => r.statut === 'en_attente').length;
+check("Les demandes en attente sont listées", nbAttente > 0 && $$("#page-content tr").length > 1, `${nbAttente} demande(s) en attente`);
+
 /* ============ DEMANDEUR (non régression) ============ */
 logout();
 login("demandeur", "demo123");
