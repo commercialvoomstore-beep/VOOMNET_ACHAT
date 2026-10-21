@@ -938,7 +938,7 @@ const PERMS = {
   admin:       ['viewDashboard','createRequest','viewOwnRequests','viewAllRequests','validateRequests',
                 'viewSuppliers','manageSuppliers','importSuppliers','manageUsers',
                 'viewOrders','createOrder','viewReceptions','recordReception','viewReports','manageSettings'],
-  demandeur:   ['viewDashboard','createRequest','viewOwnRequests','viewSuppliers',
+  demandeur:   ['viewDashboard','createRequest','viewOwnRequests',
                 'viewOrders','createOrder','viewReceptions','recordReception'],
   /* Le responsable peut désormais créer et suivre SES propres demandes,
    en plus de valider celles des autres. */
@@ -1016,7 +1016,7 @@ const PAGES = {
 };
 const MENUS = {
   admin:       ['dashboard','nouvelleDemande','mesDemandes','toutesDemandes','aValider','historiqueValidations','fournisseurs','utilisateurs','commandes','receptions','rapports','parametres'],
-  demandeur:   ['dashboard','nouvelleDemande','mesDemandes','fournisseurs','commandes','receptions'],
+  demandeur:   ['dashboard','nouvelleDemande','mesDemandes','commandes','receptions'],
   responsable: ['dashboard','nouvelleDemande','mesDemandes','aValider','historiqueValidations','fournisseurs','commandes','receptions']
 };
 

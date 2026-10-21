@@ -113,7 +113,7 @@ check("Les demandes en attente sont listées", nbAttente > 0 && $$("#page-conten
 logout();
 login("demandeur", "demo123");
 const mDem = menu();
-check("Menu demandeur inchangé", !mDem.includes("aValider") && mDem.includes("nouvelleDemande"), mDem.join(", "));
+check("Menu demandeur : pas de « Demandes à valider » ni d'onglet « Fournisseurs »", !mDem.includes("aValider") && !mDem.includes("fournisseurs") && mDem.includes("nouvelleDemande"), mDem.join(", "));
 logout();
 login("admin", "admin123");
 const mAdm = menu();
