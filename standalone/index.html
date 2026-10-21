@@ -940,7 +940,11 @@ const PERMS = {
                 'viewOrders','createOrder','viewReceptions','recordReception','viewReports','manageSettings'],
   demandeur:   ['viewDashboard','createRequest','viewOwnRequests','viewSuppliers',
                 'viewOrders','createOrder','viewReceptions','recordReception'],
-  responsable: ['viewDashboard','validateRequests','viewAllRequests']
+  /* Le responsable peut désormais créer et suivre SES propres demandes,
+   en plus de valider celles des autres. */
+responsable: ['viewDashboard','validateRequests','viewAllRequests',
+              'createRequest','viewOwnRequests','viewSuppliers',
+              'viewOrders','createOrder','viewReceptions','recordReception']
 };
 function hasPermission(p){ return !!(sessionUser && PERMS[sessionUser.role] && PERMS[sessionUser.role].includes(p)); }
 
@@ -1013,12 +1017,13 @@ const PAGES = {
 const MENUS = {
   admin:       ['dashboard','nouvelleDemande','mesDemandes','toutesDemandes','fournisseurs','utilisateurs','commandes','receptions','rapports','parametres'],
   demandeur:   ['dashboard','nouvelleDemande','mesDemandes','fournisseurs','commandes','receptions'],
-  responsable: ['dashboard','aValider','historiqueValidations']
+  responsable: ['dashboard','nouvelleDemande','mesDemandes','aValider','historiqueValidations','fournisseurs','commandes','receptions']
 };
 
 function menuLabel(key){
-  if (key === 'commandes' && sessionUser.role === 'demandeur') return 'Mes commandes';
-  if (key === 'receptions' && sessionUser.role === 'demandeur') return 'Mes réceptions';
+  const restreint = sessionUser.role === 'demandeur' || sessionUser.role === 'responsable';
+  if (key === 'commandes' && restreint) return 'Mes commandes';
+  if (key === 'receptions' && restreint) return 'Mes réceptions';
   return PAGES[key].label;
 }
 
@@ -3961,8 +3966,14 @@ document.addEventListener('click', e => {
     case 'goto-create-order': go('creationCommande', {id, nav: el.dataset.nav || 'mesDemandes'}); break;
     case 'decide': {
       const d = el.dataset.decision;
+      const laDemande = byId(DB.requests, id);
+      /* Un responsable peut désormais créer ses propres demandes : on signale
+         le cas où il valide sa propre demande. */
+      const estLaSienne = !!(laDemande && sessionUser && laDemande.demandeurId === sessionUser.id);
       if (d === 'Approuvée')
-        confirmModal('Approuver la demande <b>' + esc(byId(DB.requests,id).numero) + '</b> ?<br><span class="text-muted small">Le demandeur pourra ensuite créer la commande.</span>',
+        confirmModal(
+          'Approuver la demande <b>' + esc(laDemande.numero) + '</b> ?<br><span class="text-muted small">Le demandeur pourra ensuite créer la commande.</span>' +
+          (estLaSienne ? '<br><span class="text-muted small">⚠️ Vous êtes l’auteur de cette demande : en la validant, vous validez votre propre demande.</span>' : ''),
           () => decideRequest(id, d, ''), '✓ Approuver');
       else {
         const label = d === 'Refusée' ? 'Motif du refus *' : 'Consignes de modification *';
