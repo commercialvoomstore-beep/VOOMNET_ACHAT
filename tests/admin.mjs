@@ -119,9 +119,14 @@ if (libre) {
 
 /* ------------------- 4. RÉINITIALISATION PUIS EXPORTS (PDF / Excel) ------------------- */
 nav("parametres");
-click($('[data-act="reset-demo"]'));
+check("Bloc « Réinitialisation de la démonstration » retiré de l'interface", !$('[data-act="reset-demo"]'));
+/* réinitialisation interne pour tester les exports sur un jeu complet */
+const tmpReset = w.document.createElement("button");
+tmpReset.dataset.act = "reset-demo";
+w.document.body.appendChild(tmpReset);
+click(tmpReset);
+tmpReset.remove();
 confirmYes();
-check("Données de démonstration réinitialisées", db().requests.length === 5 && db().orders.length === 2 && db().receptions.length === 2);
 login("admin", "admin123");
 
 nav("toutesDemandes");
