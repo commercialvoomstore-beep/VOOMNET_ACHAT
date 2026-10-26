@@ -107,7 +107,7 @@ export default function VoomnetApp() {
             </div>
             <div className="splash-title">PORTAIL DE GESTION DES DEMANDES D&apos;ACHATS</div>
             <div className="splash-sub">
-              Demandes d&apos;achat · Comparaison fournisseurs · Validation · Commandes
+              Demandes · Fournisseurs · Validation · Commandes
             </div>
             <div className="splash-bar-track">
               <div
