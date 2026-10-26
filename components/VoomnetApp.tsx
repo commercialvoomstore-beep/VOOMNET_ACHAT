@@ -105,7 +105,7 @@ export default function VoomnetApp() {
                 className="splash-logo"
               />
             </div>
-            <div className="splash-title">PORTAIL DE GESTION DES DEMANDES D'ACHATS</div>
+            <div className="splash-title">PORTAIL DE GESTION DES DEMANDES D&apos;ACHATS</div>
             <div className="splash-sub">
               Demandes d&apos;achat · Comparaison fournisseurs · Validation · Commandes
             </div>

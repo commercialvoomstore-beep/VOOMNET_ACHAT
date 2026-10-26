@@ -11,7 +11,7 @@ export default function LoginScreen() {
     <div id="login-screen">
       <div className="login-card">
         <img src="/voomnet-logo.png" alt="VOOMNET TECHNOLOGY" className="login-logo-img" />
-        <div className="login-sub">PORTAIL DE GESTION DES DEMANDES D'ACHATS</div>
+        <div className="login-sub">PORTAIL DE GESTION DES DEMANDES D&apos;ACHATS</div>
         <form id="login-form" autoComplete="off">
           <div className="field" style={{ marginBottom: 14 }}>
             <label htmlFor="login-id">Identifiant</label>
