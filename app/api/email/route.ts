@@ -138,6 +138,58 @@ function buildHtmlEmail(p: EmailRequestPayload): string {
 </html>`;
 }
 
+async function sendViaMicrosoftGraph(
+  tenantId: string,
+  clientId: string,
+  clientSecret: string,
+  sender: string,
+  recipients: string[],
+  subject: string,
+  html: string
+) {
+  const tokenRes = await fetch(
+    `https://login.microsoftonline.com/${encodeURIComponent(tenantId)}/oauth2/v2.0/token`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        scope: "https://graph.microsoft.com/.default",
+        grant_type: "client_credentials",
+      }),
+    }
+  );
+  const tokenData = (await tokenRes.json()) as { access_token?: string; error_description?: string };
+  if (!tokenRes.ok || !tokenData.access_token) {
+    throw new Error(tokenData.error_description || "Échec d'authentification Microsoft Graph.");
+  }
+
+  const mailRes = await fetch(
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(sender)}/sendMail`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${tokenData.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: {
+          subject,
+          body: { contentType: "HTML", content: html },
+          toRecipients: recipients.map((address) => ({ emailAddress: { address } })),
+        },
+        saveToSentItems: true,
+      }),
+    }
+  );
+
+  if (!mailRes.ok) {
+    const errText = await mailRes.text();
+    throw new Error(`Microsoft Graph sendMail (${mailRes.status}): ${errText.slice(0, 200)}`);
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as EmailRequestPayload;
@@ -156,6 +208,35 @@ export async function POST(req: Request) {
       );
     }
 
+    const html = buildHtmlEmail(body);
+    const subject = body.subject || `[VOOMNET] Demande d'achat ${body.numero}`;
+
+    /* 1. Mode Microsoft Entra ID / Graph API (App registrations) */
+    const tenantId = process.env.AZURE_TENANT_ID || "";
+    const clientId = process.env.AZURE_CLIENT_ID || "";
+    const clientSecret = process.env.AZURE_CLIENT_SECRET || "";
+    const graphSender =
+      process.env.MAIL_SENDER || process.env.SMTP_USER || "manager@voomnettechnology.ci";
+
+    if (tenantId && clientId && clientSecret) {
+      await sendViaMicrosoftGraph(
+        tenantId,
+        clientId,
+        clientSecret,
+        graphSender,
+        recipients,
+        subject,
+        html
+      );
+      return NextResponse.json({
+        ok: true,
+        configured: true,
+        mode: "graph",
+        sentTo: recipients,
+      });
+    }
+
+    /* 2. Mode Microsoft 365 SMTP */
     const host = process.env.SMTP_HOST || "smtp.office365.com";
     const port = Number(process.env.SMTP_PORT || 587);
     const user = process.env.SMTP_USER || "";
@@ -167,7 +248,7 @@ export async function POST(req: Request) {
         ok: false,
         configured: false,
         error:
-          "Serveur SMTP non configuré (variables SMTP_USER et SMTP_PASS manquantes sur Vercel).",
+          "Serveur mail non configuré sur Vercel (renseignez SMTP_USER / SMTP_PASS ou AZURE_TENANT_ID / AZURE_CLIENT_ID / AZURE_CLIENT_SECRET).",
       });
     }
 
@@ -179,17 +260,16 @@ export async function POST(req: Request) {
       tls: { ciphers: "SSLv3", rejectUnauthorized: false },
     });
 
-    const html = buildHtmlEmail(body);
     await transporter.sendMail({
       from: `"VOOMNET — Gestion des Achats" <${from}>`,
       to: recipients.join(", "),
-      subject: body.subject || `[VOOMNET] Demande d'achat ${body.numero}`,
+      subject,
       html,
     });
 
-    return NextResponse.json({ ok: true, configured: true, sentTo: recipients });
+    return NextResponse.json({ ok: true, configured: true, mode: "smtp", sentTo: recipients });
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Erreur d'envoi SMTP";
+    const msg = err instanceof Error ? err.message : "Erreur d'envoi e-mail";
     return NextResponse.json({ ok: false, configured: true, error: msg }, { status: 500 });
   }
 }
