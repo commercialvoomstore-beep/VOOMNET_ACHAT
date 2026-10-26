@@ -559,3 +559,55 @@ table.cmp{border-collapse:collapse;min-width:560px;width:100%;font-size:12.5px}
 #wiz-sup-list::-webkit-scrollbar-thumb:hover,
 .pick-list::-webkit-scrollbar-thumb:hover,
 #sup-tablewrap .table-wrap::-webkit-scrollbar-thumb:hover{background:#1e293b}
+
+/* ============================= SPLASH SCREEN (10 SECONDES) ============================= */
+#splash-screen{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;
+  background:#0f172a;
+  background-image:radial-gradient(circle at 50% 25%, #1e293b 0%, #0f172a 75%);
+  color:#f8fafc;
+  transition:opacity .45s ease, visibility .45s ease;
+}
+#splash-screen.splash-fadeout{opacity:0;visibility:hidden;pointer-events:none}
+.splash-box{
+  max-width:440px;width:100%;text-align:center;
+  background:rgba(30,41,59,.55);border:1px solid rgba(148,163,184,.18);
+  border-radius:8px;padding:36px 32px;
+  box-shadow:0 25px 50px rgba(0,0,0,.45);
+  animation:splash-in .4s ease;
+}
+@keyframes splash-in{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.splash-logo-wrap{
+  background:#ffffff;border-radius:6px;padding:14px 20px;
+  display:inline-block;margin-bottom:20px;
+  box-shadow:0 6px 18px rgba(0,0,0,.25);
+}
+.splash-logo{width:210px;max-width:100%;height:auto;display:block}
+.splash-title{
+  font-size:13px;font-weight:700;letter-spacing:2px;color:#f8fafc;
+  text-transform:uppercase;margin-bottom:6px;
+}
+.splash-sub{font-size:12px;color:#94a3b8;margin-bottom:24px}
+.splash-bar-track{
+  width:100%;height:6px;background:rgba(148,163,184,.2);
+  border-radius:4px;overflow:hidden;margin-bottom:10px;
+}
+.splash-bar-fill{
+  height:100%;background:linear-gradient(90deg,#38bdf8,#818cf8);
+  border-radius:4px;transition:width .12s linear;
+}
+.splash-meta{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  font-size:11.5px;color:#cbd5e1;font-variant-numeric:tabular-nums;
+}
+.splash-meta span{text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.splash-meta b{color:#38bdf8;font-weight:700;flex-shrink:0}
+.splash-footer{
+  position:absolute;bottom:20px;left:0;right:0;text-align:center;
+  font-size:11px;color:#64748b;letter-spacing:.5px;
+}
+@media print{#splash-screen{display:none!important}}
