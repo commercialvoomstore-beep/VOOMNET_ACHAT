@@ -145,7 +145,7 @@ check("Conservation stricte du numéro ACH-… après reprise du brouillon", bro
 const ligneBr = $$("#page-content tr").find((tr) => tr.textContent.includes(numInitial));
 click(ligneBr.querySelector('[data-act="view-request"]'));
 await attendre(200);
-check("Bouton direct « 📤 Soumettre pour validation » présent sur la fiche du brouillon", !!$('[data-act="submit-existing"]'));
+check("Bouton vert « ✉️ Envoyer par mail » présent sur la fiche du brouillon", !!$('.btn.success[data-act="email-request"]'));
 click($('[data-act="email-request"]'));
 await attendre(200);
 click($$("#modal-root [data-mbtn]")[2]); /* 🚀 Envoyer maintenant (SMTP) */
