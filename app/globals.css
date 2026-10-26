@@ -512,3 +512,50 @@ table.cmp{border-collapse:collapse;min-width:560px;width:100%;font-size:12.5px}
 .legende i{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 .legende span{flex:1;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .legende b{font-weight:600}
+
+
+/* ============================= DÉFILEMENT LISTES FOURNISSEURS (ÉTAPE 2 + CATALOGUE) ============================= */
+#wiz-sup-list,
+.pick-list{
+  max-height:340px !important;
+  overflow-y:auto !important;
+  overflow-x:hidden;
+  padding:10px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  background:#f8fafc;
+  scrollbar-width:thin;
+  scrollbar-color:#475569 #e2e8f0;
+}
+#wiz-sup-list .pick-list{
+  max-height:none !important;
+  overflow:visible !important;
+  padding:0;
+  border:none;
+  background:transparent;
+}
+#sup-tablewrap .table-wrap{
+  max-height:480px !important;
+  overflow-y:auto !important;
+  scrollbar-width:thin;
+  scrollbar-color:#475569 #e2e8f0;
+}
+#sup-tablewrap .tbl th{
+  position:sticky;
+  top:0;
+  z-index:5;
+  background:#f1f5f9;
+  box-shadow:0 1px 0 var(--border);
+}
+#wiz-sup-list::-webkit-scrollbar,
+.pick-list::-webkit-scrollbar,
+#sup-tablewrap .table-wrap::-webkit-scrollbar{width:9px;height:9px}
+#wiz-sup-list::-webkit-scrollbar-track,
+.pick-list::-webkit-scrollbar-track,
+#sup-tablewrap .table-wrap::-webkit-scrollbar-track{background:#e2e8f0;border-radius:4px}
+#wiz-sup-list::-webkit-scrollbar-thumb,
+.pick-list::-webkit-scrollbar-thumb,
+#sup-tablewrap .table-wrap::-webkit-scrollbar-thumb{background:#475569;border-radius:4px}
+#wiz-sup-list::-webkit-scrollbar-thumb:hover,
+.pick-list::-webkit-scrollbar-thumb:hover,
+#sup-tablewrap .table-wrap::-webkit-scrollbar-thumb:hover{background:#1e293b}
