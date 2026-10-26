@@ -116,6 +116,55 @@ click($$("#modal-root [data-mbtn]")[1]);
 await attendre(400);
 check("Envoi automatique déclenché lors de l'approbation", appelsEmail.length === 1 && /Approuvée/.test(appelsEmail[0]?.eventLabel || ""), appelsEmail[0]?.eventLabel);
 
+/* 5. Scénario signalé : enregistrer en brouillon puis envoyer par mail -> passe dans le bac Demandes à valider */
+logout();
+login("demandeur", "demo123");
+aller("nouvelleDemande");
+click($('[data-act="add-article"]'));
+input($(".art input[data-ai]"), "Imprimante Réseau");
+input($$(".art input[data-ai]")[1], "3");
+input($$(".art input[data-ai]")[2], "250000");
+click($('[data-act="wiz-savequit"]'));
+await attendre(200);
+
+const dbApresBrouillon = JSON.parse(w.localStorage.getItem("voomnet_achats_v4"));
+const brouillon = dbApresBrouillon.requests.find((r) => (r.articles || []).some((a) => a.designation === "Imprimante Réseau"));
+const numInitial = brouillon?.numero;
+check("Brouillon enregistré avec son numéro", !!brouillon && brouillon.statut === "brouillon", numInitial);
+
+/* Reprise du brouillon -> le numéro ne doit jamais changer */
+const btnResume = $$('[data-act="resume-request"]').find((b) => b.dataset.id === brouillon.id);
+click(btnResume);
+await attendre(200);
+click($('[data-act="wiz-savequit"]'));
+await attendre(200);
+const brouillonApresReprise = JSON.parse(w.localStorage.getItem("voomnet_achats_v4")).requests.find((r) => r.id === brouillon.id);
+check("Conservation stricte du numéro ACH-… après reprise du brouillon", brouillonApresReprise.numero === numInitial, `${numInitial} -> ${brouillonApresReprise.numero}`);
+
+/* Envoi par mail du brouillon -> passe automatiquement en en_attente et apparaît dans Demandes à valider */
+const ligneBr = $$("#page-content tr").find((tr) => tr.textContent.includes(numInitial));
+click(ligneBr.querySelector('[data-act="view-request"]'));
+await attendre(200);
+check("Bouton direct « 📤 Soumettre pour validation » présent sur la fiche du brouillon", !!$('[data-act="submit-existing"]'));
+click($('[data-act="email-request"]'));
+await attendre(200);
+click($$("#modal-root [data-mbtn]")[2]); /* 🚀 Envoyer maintenant (SMTP) */
+await attendre(400);
+
+logout();
+login("admin", "admin123");
+aller("aValider");
+await attendre(200);
+const visibleDansBacAdmin = $$("#page-content tr").some((tr) => tr.textContent.includes(numInitial));
+check("Le brouillon envoyé apparaît bien dans le bac « 🛒 Demandes à valider » de l'administrateur", visibleDansBacAdmin, numInitial);
+
+logout();
+login("responsable", "demo123");
+aller("aValider");
+await attendre(200);
+const visibleDansBacResp = $$("#page-content tr").some((tr) => tr.textContent.includes(numInitial));
+check("Le brouillon envoyé apparaît bien dans le bac « 🛒 Demandes à valider » du responsable", visibleDansBacResp, numInitial);
+
 logout();
 console.log(ok.join("\n"));
 if (ko.length) console.log("\n" + ko.join("\n"));
