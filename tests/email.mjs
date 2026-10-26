@@ -103,7 +103,7 @@ check("Modale d'envoi par e-mail ouverte", /Envoyer la demande .* par e-mail/.te
 check("Destinataires pré-remplis dans la modale", ($("#em-to")?.value || "").includes("direction.achats@voomnet.ci"));
 
 appelsEmail.length = 0;
-const btnSmtp = $$("#modal-root [data-mbtn]")[2];
+const btnSmtp = $$("#modal-root [data-mbtn]")[1];
 click(btnSmtp);
 await attendre(400);
 check("Envoi manuel SMTP déclenché depuis la modale", appelsEmail.length === 1);
@@ -148,7 +148,7 @@ await attendre(200);
 check("Bouton vert « ✉️ Envoyer par mail » présent sur la fiche du brouillon", !!$('.btn.success[data-act="email-request"]'));
 click($('[data-act="email-request"]'));
 await attendre(200);
-click($$("#modal-root [data-mbtn]")[2]); /* 🚀 Envoyer maintenant (SMTP) */
+click($$("#modal-root [data-mbtn]")[1]); /* 🚀 Envoyer maintenant (SMTP) */
 await attendre(400);
 
 logout();
