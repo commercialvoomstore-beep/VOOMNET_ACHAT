@@ -636,3 +636,33 @@ table.cmp{border-collapse:collapse;min-width:560px;width:100%;font-size:12.5px}
   .splash-sub{font-size:8px;letter-spacing:0}
   .login-sub{font-size:8px;letter-spacing:.3px}
 }
+
+/* ============================= SÉLECTION DES DESTINATAIRES E-MAIL ============================= */
+.email-recipients-section{border:1px solid var(--border);border-radius:8px;background:#f8fafc;padding:13px;margin-bottom:14px}
+.email-recipients-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.email-recipients-header label{font-size:12.5px;font-weight:700;color:#1e293b}
+.email-selected-count{font-size:11.5px;color:var(--muted);white-space:nowrap}
+.email-selected-count b{color:var(--primary);font-weight:700}
+.email-recipient-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.email-recipient-toolbar input[type=search]{flex:1;min-width:220px;max-width:400px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;background:#fff;font-size:12px}
+.email-recipient-toolbar input[type=search]:focus{outline:none;border-color:#475569;box-shadow:0 0 0 2px rgba(15,23,42,.08)}
+.email-recipient-actions{display:flex;gap:6px;flex-wrap:wrap}
+.email-recipient-actions .btn{font-size:11px;padding:5px 9px}
+.email-recipient-list{max-height:300px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:8px;padding:2px 5px 2px 2px;scrollbar-width:thin;scrollbar-color:#94a3b8 #e2e8f0}
+.email-recipient-list::-webkit-scrollbar{width:7px}
+.email-recipient-list::-webkit-scrollbar-track{background:#e2e8f0;border-radius:4px}
+.email-recipient-list::-webkit-scrollbar-thumb{background:#64748b;border-radius:4px}
+.email-recipient-card{display:flex;align-items:flex-start;gap:9px;min-width:0;padding:9px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;transition:background .12s,border-color .12s}
+.email-recipient-card:hover{background:#f8fafc;border-color:#94a3b8}
+.email-recipient-card.selected{background:#f8fafc;border-color:#475569;box-shadow:inset 0 0 0 1px #475569}
+.email-recipient-card input[type=checkbox]{width:15px;height:15px;flex:0 0 15px;margin:2px 0 0;accent-color:var(--primary);cursor:pointer}
+.email-recipient-info{display:flex;flex-direction:column;gap:2px;min-width:0;line-height:1.3}
+.email-recipient-name{font-size:12px;font-weight:650;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.email-recipient-address{font-size:10.5px;color:#475569;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.email-recipient-role{align-self:flex-start;margin-top:3px;padding:1px 6px;border:1px solid var(--border-light);border-radius:3px;background:#f8fafc;color:var(--muted);font-size:9.5px;font-weight:600}
+.email-recipient-hint{margin:8px 0 0}
+@media(max-width:560px){
+  .email-recipients-section{padding:9px}
+  .email-recipient-list{grid-template-columns:1fr;max-height:260px}
+  .email-recipient-toolbar input[type=search]{max-width:none}
+}

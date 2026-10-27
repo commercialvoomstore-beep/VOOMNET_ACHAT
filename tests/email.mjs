@@ -101,6 +101,18 @@ click(btnMail);
 await attendre(200);
 check("Modale d'envoi par e-mail ouverte", /Envoyer la demande .* par e-mail/.test($("#modal-root").textContent || ""));
 check("Destinataires pré-remplis dans la modale", ($("#em-to")?.value || "").includes("direction.achats@voomnet.ci"));
+check("Liste des destinataires en cartes aérées", $$(".email-recipient-card").length >= 4, $$(".email-recipient-card").length + " cartes");
+check("Recherche destinataires présente", !!$("#em-search"));
+check("Commandes sélectionner tout / désélectionner tout présentes", !!$('[data-act="email-select-all"]') && !!$('[data-act="email-clear-all"]'));
+const nbRecipientsUI = $$(".email-recipient-card").length;
+input($("#em-search"), "aya");
+check("Recherche filtre les cartes sans les supprimer", $$(".email-recipient-card").filter(c => c.style.display !== "none").length === 1, $$(".email-recipient-card").filter(c => c.style.display !== "none").map(c => c.textContent.trim()).join(" | "));
+input($("#em-search"), "");
+click($('[data-act="email-clear-all"]'));
+check("Désélectionner tout vide la sélection et la liste d'adresses", $$(".email-recipient-card input:checked").length === 0 && $("#em-to").value === "");
+click($('[data-act="email-select-all"]'));
+check("Sélectionner tout coche tous les destinataires", $$(".email-recipient-card input:checked").length === nbRecipientsUI);
+check("Le compteur de sélection suit les cases cochées", $("#em-selected-count").textContent.trim() === String(nbRecipientsUI));
 
 appelsEmail.length = 0;
 const btnSmtp = $$("#modal-root [data-mbtn]")[1];
